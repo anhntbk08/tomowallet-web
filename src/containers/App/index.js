@@ -22,7 +22,7 @@ import AppStyler from './style';
 import { TextLinkBlue } from '../../styles';
 // Utilities & Constants
 import { withWeb3 } from '../../components/Web3';
-import { selectWallet, selectClipboardPopup } from '../Global/selectors';
+import { selectWallet, selectClipboardPopup, selectMode } from '../Global/selectors';
 import { storeWallet } from '../Global/actions';
 import { ROUTE, RPC_SERVER, ENUM } from '../../constants';
 import './app.scss';
@@ -73,7 +73,7 @@ class App extends PureComponent {
 
     return (
       <Router>
-        <AppStyler>
+        <AppStyler style={{ backgroundColor: this.props.walletMode === 'privacy' ? 'black': undefined}}>
           <LoadingComponent />
           <NavigationBar isLoggedIn={isLoggedIn} />
           <div className='maincontent d-flex d-md-none align-items-center'>
@@ -147,6 +147,7 @@ const mapStateToProps = () =>
   createStructuredSelector({
     wallet: selectWallet,
     clipboardData: selectClipboardPopup,
+    walletMode: selectMode
   });
 const mapDispatchToProps = dispatch => ({
   onStoreWallet: wallet => dispatch(storeWallet(wallet)),

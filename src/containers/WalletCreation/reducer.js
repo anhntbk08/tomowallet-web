@@ -30,6 +30,9 @@ import {
   UPDATE_PASSWORD_POPUP_STATE,
 } from './constants';
 import { shuffleArray } from '../../utils';
+import {address as Address} from 'tomoprivacyjs';
+import { stat } from 'fs';
+// const Stealth = require('../stealth/dist').stealth;
 // ===================
 
 // ===== PRE-DEFINED VARIABLES =====
@@ -60,6 +63,13 @@ const initialState = fromJS({
     isOpen: false,
     ...initialPasswordPopupState,
   },
+  privacy: {
+    privSpendKey: '',
+    privViewKey: '',
+    pubSpendKey: '',
+    pubViewKey: '',
+    pubAddr: ''
+  }
 });
 // =================================
 
@@ -83,6 +93,7 @@ export default (state = initialState, action) => {
     case SET_FORM_STATES:
       return state.set('formState', action.newState);
     case SET_PRIVATE_KEY:
+      state.set('privacy', Address.generateKeys(action.key));
       return state.setIn(['keyView', 'key'], action.key);
     case SHUFFLE_MNEMONIC: {
       const shuffledMnemonic = shuffleArray(

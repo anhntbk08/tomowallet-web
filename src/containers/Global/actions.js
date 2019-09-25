@@ -74,4 +74,8 @@ export const updateWalletPopupStage = stage => ({
   type: UPDATE_WALLET_POPUP_STAGE,
   stage,
 });
+
+export const togglePrivacyMode = () => ({
+  type: 'TOGGLE_PRIVACY_MODE'
+});
 // ===================

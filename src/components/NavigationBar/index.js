@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { createStructuredSelector } from 'reselect';
 import _get from 'lodash.get';
+import ToggleButton from 'react-toggle-button';
 import _isEmpty from 'lodash.isempty';
 import _isEqual from 'lodash.isequal';
 import {
@@ -32,6 +33,7 @@ import {
   toggleWalletPopup,
   setNetwork,
   toggleNetworkConfirmationPopup,
+  togglePrivacyMode
 } from '../../containers/Global/actions';
 import { ROUTE, LIST, MSG } from '../../constants';
 import {
@@ -45,6 +47,7 @@ import {
 import {
   selectNetworkData,
   selectNetworkConfirmationPopup,
+  selectMode
 } from '../../containers/Global/selectors';
 import logo_tomochain from '../../assets/images/logo-tomochain.png';
 
@@ -195,7 +198,7 @@ class NavigationBar extends PureComponent {
       networkConfirmationPopup,
       onToggleNetworkConfirmationPopup,
     } = this.props;
-
+    console.log(this.props.walletMode);
     return (
       <Fragment>
         <NavBarStyler light expand='md'>
@@ -205,6 +208,11 @@ class NavigationBar extends PureComponent {
               alt={formatMessage(MSG.HEADER_NAVBAR_LOGO_ALT)}
             />
           </NavbarBrand>
+          <ToggleButton
+            value={ this.props.walletMode === 'privacy' }
+            onToggle={(value) => {
+              this.props.onTogglePrivacyMode();
+            }} />
           <Collapse navbar>
             <Nav className='ml-auto' navbar>
               {isLoggedIn && this.handleRenderPrivateBar()}
@@ -277,10 +285,11 @@ NavigationBar.defaultProps = {
 // ======================
 
 // ===== INJECTIONS =====
-const mapStateToProps = () =>
+const mapStateToProps = (state) =>
   createStructuredSelector({
     network: selectNetworkData,
     networkConfirmationPopup: selectNetworkConfirmationPopup,
+    walletMode: selectMode
   });
 const mapDispatchToProps = dispatch => ({
   onReleaseWallet: () => dispatch(releaseWallet()),
@@ -288,6 +297,7 @@ const mapDispatchToProps = dispatch => ({
   onToggleNetworkConfirmationPopup: (bool, networkOpt) =>
     dispatch(toggleNetworkConfirmationPopup(bool, networkOpt)),
   onToggleWalletPopup: bool => dispatch(toggleWalletPopup(bool)),
+  onTogglePrivacyMode: () => dispatch(togglePrivacyMode())
 });
 const withConnect = connect(
   mapStateToProps,

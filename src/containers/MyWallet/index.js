@@ -655,7 +655,7 @@ class MyWallet extends PureComponent {
     return (
       <Fragment>
         <Helmet>
-          <title>{formatMessage(MSG.MY_WALLET_TITLE)}</title>
+          <title>AAAA{formatMessage(MSG.MY_WALLET_TITLE)}</title>
         </Helmet>
         <AddressInfo
           coinData={coinData}

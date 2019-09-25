@@ -47,6 +47,7 @@ const initialState = fromJS({
   },
   wallet: null,
   walletPopup: initialWalletPopupState,
+  mode: 'normal' // normal and privacy
 });
 // =============================
 
@@ -91,6 +92,9 @@ export default (state = initialState, action) => {
       return state.setIn(['walletPopup', 'tabType'], action.tabType);
     case UPDATE_WALLET_POPUP_STAGE:
       return state.setIn(['walletPopup', 'stage'], action.stage);
+    case 'TOGGLE_PRIVACY_MODE':
+      console.log(state.get('mode'))
+      return state.set('mode', state.get('mode') === 'normal' ? 'privacy' : 'normal');
     default:
       return state;
   }
