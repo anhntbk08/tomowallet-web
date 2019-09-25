@@ -6,6 +6,7 @@
 // ===== IMPORTS =====
 // Modules
 import _isNumber from 'lodash.isnumber';
+import _get from 'lodash.get';
 // ===================
 
 // ===== METHODS =====
@@ -31,11 +32,14 @@ export const shuffleArray = array => {
 };
 
 export const trimMnemonic = rawMnemonic => {
-  const words = rawMnemonic
-    .trim() // Remove beginning & end spaces
-    .replace(/[\r\n]+/g, '') // Remove break-line characters
-    .split(/[ ]+/);
-  return words.join(' ');
+  if (rawMnemonic) {
+    const words = rawMnemonic
+      .trim() // Remove beginning & end spaces
+      .replace(/[\r\n]+/g, '') // Remove break-line characters
+      .split(/[ ]+/);
+    return words.join(' ');
+  }
+  return '';
 };
 
 export const convertLocaleNumber = (rawNumber, decimals = 3) => {
@@ -91,5 +95,21 @@ export const downloadFile = ({ content, name, type }) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+export const changeInputWithSubmit = updateInput => event => {
+  const newValue = _get(event, 'target.value', '');
+  const isSubmitted =
+    newValue.split('\n').length === 2 &&
+    newValue.indexOf('\n') === newValue.length - 1;
+  if (!isSubmitted && updateInput) {
+    updateInput(newValue);
+  }
+};
+
+export const detectSubmit = handleSubmit => event => {
+  if (event.keyCode === 13 && handleSubmit) {
+    handleSubmit(event);
+  }
 };
 // ===================

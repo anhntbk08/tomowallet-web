@@ -3,8 +3,10 @@ import injectSaga from './injectSaga';
 import history from './history';
 import createDeepEqualSelector from './deepSelector';
 import {
+  changeInputWithSubmit,
   convertLocaleNumber,
   copyToClipboard,
+  detectSubmit,
   downloadFile,
   removeTrailingZero,
   shuffleArray,
@@ -24,13 +26,16 @@ import {
   getBalance,
   getLedgerTokenTransferData,
   getWalletInfo,
+  isAddress,
+  isPrivateKey,
+  isRecoveryPhrase,
   mnemonicToPrivateKey,
   repeatGetTransaction,
   sendMoney,
   sendToken,
 } from './blockchain';
 import getValidations, { mergeErrors } from './validations';
-import { withLoading } from './injectLoading';
+import { withGlobal } from './injectGlobal';
 import {
   getLedger,
   getLocale,
@@ -45,16 +50,27 @@ import {
   setLocale,
   setWeb3Info,
 } from './storage';
+import electron, {
+  detectKeystore,
+  isElectron,
+  readKeystore,
+  removeKeystore,
+  writeKeystore,
+} from './electron';
 
 export {
   bnToDecimals,
+  changeInputWithSubmit,
   convertLocaleNumber,
   convertAmountWithDecimals,
   copyToClipboard,
   createDeepEqualSelector,
   decimalsToBN,
   decryptKeystore,
+  detectKeystore,
+  detectSubmit,
   downloadFile,
+  electron,
   encryptKeystore,
   estimateCurrencyFee,
   estimateTRC20Fee,
@@ -72,8 +88,14 @@ export {
   history,
   injectReducer,
   injectSaga,
+  isAddress,
+  isElectron,
+  isPrivateKey,
+  isRecoveryPhrase,
   mergeErrors,
   mnemonicToPrivateKey,
+  readKeystore,
+  removeKeystore,
   removeLedger,
   removeLocale,
   removeNetwork,
@@ -88,5 +110,6 @@ export {
   setWeb3Info,
   shuffleArray,
   trimMnemonic,
-  withLoading,
+  withGlobal,
+  writeKeystore,
 };

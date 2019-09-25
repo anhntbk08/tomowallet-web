@@ -35,9 +35,7 @@ import {
   toggleSuccessPopup,
   resetSendTokenForm,
   toggleReceiveTokenPopup,
-  loadCoinData,
   resetState,
-  loadWalletTransactionData,
 } from './actions';
 import {
   selectTableType,
@@ -46,7 +44,6 @@ import {
   selectSendTokenForm,
   selectSuccessPopup,
   selectTokenOptions,
-  selectCoinData,
 } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
@@ -62,12 +59,11 @@ import {
   mergeErrors,
   injectSaga,
   sendToken,
-  withLoading,
+  withGlobal,
   getWeb3Info,
   getNetwork,
   sendMoney,
   getWalletInfo,
-  convertAmountWithDecimals,
   getBalance,
   repeatGetTransaction,
   estimateCurrencyFee,
@@ -93,7 +89,6 @@ class MyWallet extends PureComponent {
     this.handleCloseSendTokenPopup = this.handleCloseSendTokenPopup.bind(this);
     this.handleConfirmBeforeSend = this.handleConfirmBeforeSend.bind(this);
     this.handleGetContractData = this.handleGetContractData.bind(this);
-    this.handleGetTrc20Fee = this.handleValidateCurrencyFee.bind(this);
     this.handleGetSendAction = this.handleGetSendAction.bind(this);
     this.handleOpenSendTokenPopup = this.handleOpenSendTokenPopup.bind(this);
     this.handleSendMoneyByLedger = this.handleSendMoneyByLedger.bind(this);
@@ -104,11 +99,6 @@ class MyWallet extends PureComponent {
     this.handleValidateTrc20Fee = this.handleValidateTrc20Fee.bind(this);
     this.handleValidateTrc21Fee = this.handleValidateTrc21Fee.bind(this);
     this.handleValidationSendForm = this.handleValidationSendForm.bind(this);
-  }
-
-  componentDidMount() {
-    const { onLoadCoinData } = this.props;
-    onLoadCoinData();
   }
 
   componentWillUnmount() {
@@ -128,7 +118,7 @@ class MyWallet extends PureComponent {
       [SEND_TOKEN_FIELDS.TOKEN, PORTFOLIO_COLUMNS.DECIMALS],
       0,
     );
-    const normalBalance = convertAmountWithDecimals(rawBalance, decimals);
+    const normalBalance = bnToDecimals(rawBalance, decimals);
 
     onUpdateSendTokenInput(SEND_TOKEN_FIELDS.TRANSFER_AMOUNT, normalBalance);
   }
@@ -169,7 +159,7 @@ class MyWallet extends PureComponent {
         } else {
           estimateTRC21Fee(web3, contractData).then(feeObj => {
             if (feeObj.type === ENUM.TOKEN_TYPE.TRC21) {
-              this.handleValidateCurrencyFee(feeObj);
+              this.handleValidateTrc21Fee(feeObj);
             } else {
               this.handleValidateTrc20Fee(feeObj);
             }
@@ -406,17 +396,34 @@ class MyWallet extends PureComponent {
       )
     ) {
       toggleLoading(false);
-      onUpdateSendTokenInput(
-        SEND_TOKEN_FIELDS.TRANSFER_AMOUNT,
-        bnToDecimals(
-          web3.utils
-            .toBN(balance)
-            .sub(web3.utils.toBN(decimalsToBN(feeObj.amount, decimals))),
-          decimals,
-        ),
+      const remainAmount = bnToDecimals(
+        web3.utils
+          .toBN(balance)
+          .sub(web3.utils.toBN(decimalsToBN(feeObj.amount, decimals))),
+        decimals,
       );
-      onUpdateSendTokenInput(SEND_TOKEN_FIELDS.TRANSACTION_FEE, feeObj);
-      onUpdateSendTokenPopupStage(SEND_TOKEN_STAGES.CONFIRMATION);
+
+      if (remainAmount.includes('-')) {
+        onUpdateSendTokenErrors({
+          [SEND_TOKEN_FIELDS.TRANSFER_AMOUNT]: [
+            formatMessage(
+              MSG.MY_WALLET_POPUP_SEND_TOKEN_ERROR_INSUFFICIENT_FEE_FROM_CURRENCY,
+            ),
+          ],
+        });
+      } else {
+        onUpdateSendTokenInput(
+          SEND_TOKEN_FIELDS.TRANSFER_AMOUNT,
+          bnToDecimals(
+            web3.utils
+              .toBN(balance)
+              .sub(web3.utils.toBN(decimalsToBN(feeObj.amount, decimals))),
+            decimals,
+          ),
+        );
+        onUpdateSendTokenInput(SEND_TOKEN_FIELDS.TRANSACTION_FEE, feeObj);
+        onUpdateSendTokenPopupStage(SEND_TOKEN_STAGES.CONFIRMATION);
+      }
     } else if (
       !web3.utils
         .toBN(
@@ -599,7 +606,7 @@ class MyWallet extends PureComponent {
           name: SEND_TOKEN_FIELDS.TRANSFER_AMOUNT,
           value: _get(sendTokenForm, [SEND_TOKEN_FIELDS.TRANSFER_AMOUNT]),
           max: parseFloat(
-            convertAmountWithDecimals(
+            bnToDecimals(
               _get(sendTokenForm, [
                 SEND_TOKEN_FIELDS.TOKEN,
                 PORTFOLIO_COLUMNS.BALANCE,
@@ -636,7 +643,6 @@ class MyWallet extends PureComponent {
 
   render() {
     const {
-      coinData,
       intl: { formatMessage },
       onSetTableType,
       onToggleReceiveTokenPopup,
@@ -658,7 +664,6 @@ class MyWallet extends PureComponent {
           <title>AAAA{formatMessage(MSG.MY_WALLET_TITLE)}</title>
         </Helmet>
         <AddressInfo
-          coinData={coinData}
           openReceiveTokenPopup={() => onToggleReceiveTokenPopup(true)}
           openSendTokenPopup={this.handleOpenSendTokenPopup}
           wallet={wallet}
@@ -745,9 +750,7 @@ MyWallet.propTypes = {
 };
 
 MyWallet.defaultProps = {
-  coinData: {},
   intl: {},
-  onLoadCoinData: () => {},
   onResetSendTokenForm: () => {},
   onResetState: () => {},
   onSetTableType: () => {},
@@ -771,7 +774,6 @@ MyWallet.defaultProps = {
 // ===== INJECTIONS =====
 const mapStateToProps = () =>
   createStructuredSelector({
-    coinData: selectCoinData,
     receivePopup: selectReceiveToKenPopup,
     sendTokenForm: selectSendTokenForm,
     sendToKenPopup: selectSendTokenPopup,
@@ -781,7 +783,6 @@ const mapStateToProps = () =>
     wallet: selectWallet,
   });
 const mapDispatchToProps = dispatch => ({
-  onLoadCoinData: () => dispatch(loadCoinData()),
   onResetSendTokenForm: () => dispatch(resetSendTokenForm()),
   onResetState: () => dispatch(resetState()),
   onSetTableType: type => dispatch(setTableType(type)),
@@ -813,5 +814,5 @@ export default compose(
   withIntl,
   withRouter,
   withWeb3,
-  withLoading,
+  withGlobal,
 )(MyWallet);

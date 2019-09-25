@@ -10,7 +10,7 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import _get from 'lodash.get';
-import { FormGroup, Label, Input, FormFeedback } from 'reactstrap';
+import { FormFeedback, FormGroup, Input, Label } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Utilities & Constants
 import { withIntl } from '../../../components/IntlProvider';
@@ -18,14 +18,30 @@ import { withWeb3 } from '../../../components/Web3';
 import { MSG } from '../../../constants';
 import { selectImportState } from '../selectors';
 import { updateInput } from '../actions';
+import { changeInputWithSubmit, detectSubmit } from '../../../utils';
 
 // ===== MAIN COMPONENT =====
 class RPOrPKForm extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.handleInputChange = this.handleInputChange.bind(this);
+  }
+
+  componentDidMount() {
+    document.getElementById('recoveryPhraseInput').focus();
+  }
+
+  handleInputChange(value) {
+    const { onUpdateInput } = this.props;
+    onUpdateInput('recoveryPhrase', value);
+  }
+
   render() {
     const {
+      handleSubmit,
       importWallet,
       intl: { formatMessage },
-      onUpdateInput,
     } = this.props;
     const errors = _get(importWallet, 'errors', []);
 
@@ -37,13 +53,15 @@ class RPOrPKForm extends PureComponent {
             <FontAwesomeIcon icon='unlock' />
           </Label>
           <Input
+            id='recoveryPhraseInput'
             type='textarea'
             name='recoveryPhrase'
             placeholder={formatMessage(
               MSG.IMPORT_WALLET_TAB_RECOVERY_PHRASE_INPUT_PLACEHOLDER,
             )}
             value={_get(importWallet, 'input.recoveryPhrase', '')}
-            onChange={e => onUpdateInput('recoveryPhrase', e.target.value)}
+            onChange={changeInputWithSubmit(this.handleInputChange)}
+            onKeyDown={detectSubmit(handleSubmit)}
             invalid={errors.length > 0}
           />
           <FormFeedback>
@@ -60,6 +78,8 @@ class RPOrPKForm extends PureComponent {
 
 // ===== PROP TYPES =====
 RPOrPKForm.propTypes = {
+  /** Action to start form submitting */
+  handleSubmit: PropTypes.func,
   /** Import Wallet page's state */
   importWallet: PropTypes.object,
   /** React Intl's instance object */
@@ -71,6 +91,7 @@ RPOrPKForm.propTypes = {
 };
 
 RPOrPKForm.defaultProps = {
+  handleSubmit: () => {},
   importWallet: {},
   intl: {},
   onUpdateInput: () => {},

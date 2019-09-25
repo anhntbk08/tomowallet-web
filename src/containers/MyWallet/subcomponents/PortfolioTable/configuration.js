@@ -24,7 +24,7 @@ import {
 } from '../../../../utils';
 import { PORTFOLIO_COLUMNS, SEND_TOKEN_FIELDS } from '../../constants';
 import { MSG, ENUM, API } from '../../../../constants';
-import { convertAmountWithDecimals } from '../../../../utils/blockchain';
+import { bnToDecimals } from '../../../../utils';
 // ===================
 
 // ===== CONFIGURATION =====
@@ -35,8 +35,8 @@ export default ({ formatMessage, openSendTokenPopup }) => [
       {
         headerClassName: 'd-none',
         accessor: PORTFOLIO_COLUMNS.TOKEN_NAME,
-        Cell: ({ value }) => (
-          <TokenCell formatMessage={formatMessage} value={value} />
+        Cell: ({ original }) => (
+          <TokenCell formatMessage={formatMessage} values={original} />
         ),
       },
     ],
@@ -50,7 +50,7 @@ export default ({ formatMessage, openSendTokenPopup }) => [
         Cell: ({ original, value }) => {
           const decimals = _get(original, PORTFOLIO_COLUMNS.DECIMALS);
           return convertLocaleNumber(
-            parseFloat(convertAmountWithDecimals(value, decimals)),
+            parseFloat(bnToDecimals(value, decimals)),
             3,
           );
         },
@@ -67,7 +67,7 @@ export default ({ formatMessage, openSendTokenPopup }) => [
           const rawBalance = _get(original, PORTFOLIO_COLUMNS.BALANCE);
           const decimals = _get(original, PORTFOLIO_COLUMNS.DECIMALS);
           return convertLocaleNumber(
-            parseFloat(convertAmountWithDecimals(rawBalance, decimals)) *
+            parseFloat(bnToDecimals(rawBalance, decimals)) *
               _get(original, [PORTFOLIO_COLUMNS.PRICE]),
             3,
           );
@@ -111,7 +111,13 @@ export default ({ formatMessage, openSendTokenPopup }) => [
           const address = _get(getWeb3Info(), 'address', '');
           const baseUrl = _get(API, [networkKey, 'VIEW_TOKEN'], '');
           const tokenType = _get(original, [PORTFOLIO_COLUMNS.TYPE], '');
+          const tokenAddress = _get(
+            original,
+            [PORTFOLIO_COLUMNS.TOKEN_ADDRESS],
+            '',
+          );
           let viewLink = '';
+
           if (tokenType === ENUM.TOKEN_TYPE.CURRENCY) {
             viewLink = `${_get(
               API,
@@ -121,29 +127,13 @@ export default ({ formatMessage, openSendTokenPopup }) => [
           } else {
             switch (networkKey) {
               case ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET:
-                viewLink = `${baseUrl}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TOKEN_ADDRESS],
-                  '',
-                )}`;
+                viewLink = `${baseUrl}/${tokenAddress}`;
                 break;
               case ENUM.NETWORK_TYPE.TOMOCHAIN_MAINNET:
-                viewLink = `${baseUrl}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TYPE],
-                  '',
-                ).toLowerCase()}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TOKEN_ADDRESS],
-                  '',
-                )}`;
+                viewLink = `${baseUrl}/${tokenAddress}/${tokenType.toLowerCase()}/${address}`;
                 break;
               default:
-                viewLink = `${baseUrl}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TOKEN_ADDRESS],
-                  '',
-                )}`;
+                viewLink = `${baseUrl}/${tokenAddress}`;
             }
           }
 

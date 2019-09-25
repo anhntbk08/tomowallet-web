@@ -1,24 +1,24 @@
 const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const dotenv = require('dotenv');
+// const dotenv = require('dotenv');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 
 module.exports = options => {
-  // Get the root path (assuming your webpack config is in the root of your project!)
-  const currentPath = path.join(__dirname);
+  // // Get the root path (assuming your webpack config is in the root of your project!)
+  // const currentPath = path.join(__dirname);
 
-  // Create the fallback path (the production .env)
-  const envPath = currentPath + '/.env';
+  // // Create the fallback path (the production .env)
+  // const envPath = currentPath + '/.env';
 
-  // Set the path parameter in the dotenv config
-  const fileEnv = dotenv.config({ path: envPath }).parsed;
+  // // Set the path parameter in the dotenv config
+  // const fileEnv = dotenv.config({ path: envPath }).parsed;
 
-  // reduce it to a nice object, the same as before
-  const envKeys = Object.keys(fileEnv).reduce((prev, next) => {
-    prev[`process.env.${next}`] = JSON.stringify(fileEnv[next]);
-    return prev;
-  }, {});
+  // // reduce it to a nice object, the same as before
+  // const envKeys = Object.keys(fileEnv).reduce((prev, next) => {
+  //   prev[`process.env.${next}`] = JSON.stringify(fileEnv[next]);
+  //   return prev;
+  // }, {});
 
   return {
     mode: options.mode,
@@ -65,13 +65,16 @@ module.exports = options => {
         },
       ],
     },
-    node: {
-      fs: 'empty',
-      net: 'empty',
-      child_process: 'empty',
-    },
+    node: Object.assign(
+      {
+        fs: 'empty',
+        net: 'empty',
+        child_process: 'empty',
+      },
+      options.node,
+    ),
     plugins: [
-      new webpack.DefinePlugin(envKeys),
+      // new webpack.DefinePlugin(envKeys),
       new HtmlWebpackPlugin({
         template: './public/index.html',
         filename: './index.html',
@@ -81,7 +84,8 @@ module.exports = options => {
       }),
       new webpack.optimize.ModuleConcatenationPlugin(),
     ].concat(options.plugins || []),
-    target: 'web',
+    target: options.target || 'web',
+    externals: options.externals,
     performance: options.performance || {},
   };
 };

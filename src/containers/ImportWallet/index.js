@@ -5,14 +5,13 @@
  */
 // Modules
 import React, { PureComponent, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { withRouter } from 'react-router-dom';
 import _get from 'lodash.get';
 import _isEmpty from 'lodash.isempty';
-import PropTypes from 'prop-types';
-import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import Eth from '@ledgerhq/hw-app-eth';
 import * as HDKey from 'hdkey';
 import * as ethUtils from 'ethereumjs-util';
@@ -42,7 +41,7 @@ import KeystoreForm from './subcomponents/KeystoreForm';
 import AddressPopup from './subcomponents/AddressPopup';
 // Utilities, Constants & Styles
 import { IMPORT_TYPES, DOMAIN_KEY } from './constants';
-import { selectImportState, selectAddressPopup } from './selectors';
+import { selectAddressPopup, selectImportState } from './selectors';
 import {
   resetState,
   updateErrors,
@@ -58,11 +57,16 @@ import {
   injectReducer,
   generateWeb3,
   setWeb3Info,
-  withLoading,
+  withGlobal,
   getValidations,
   trimMnemonic,
   getBalance,
   removeWeb3Info,
+  isElectron,
+  electron,
+  isRecoveryPhrase,
+  isPrivateKey,
+  removeKeystore,
 } from '../../utils';
 import { withWeb3 } from '../../components/Web3';
 import { withIntl } from '../../components/IntlProvider';
@@ -120,11 +124,16 @@ class ImportWallet extends PureComponent {
             'chosenIndex',
           )}`,
         });
+        if (isElectron()) {
+          removeKeystore().then(
+            ({ error }) => error && this.handleUpdateError(error.message),
+          );
+        }
       });
     }
   }
 
-  handleAccessByRecoveryPhrase() {
+  handleAccessByRecoveryPhrase(accessType) {
     const {
       history,
       importWallet,
@@ -133,17 +142,12 @@ class ImportWallet extends PureComponent {
       rpcServer,
       toggleLoading,
       updateWeb3,
-      web3,
     } = this.props;
     const recoveryPhrase = trimMnemonic(
       _get(importWallet, 'input.recoveryPhrase', ''),
     );
 
-    if (
-      recoveryPhrase &&
-      (web3.utils.isHex(recoveryPhrase) ||
-        recoveryPhrase.split(' ').length === 12)
-    ) {
+    if (isRecoveryPhrase(recoveryPhrase) || isPrivateKey(recoveryPhrase)) {
       try {
         toggleLoading(true);
         const newWeb3 = generateWeb3(recoveryPhrase, rpcServer);
@@ -164,6 +168,11 @@ class ImportWallet extends PureComponent {
             });
           })
           .then(() => {
+            if (isElectron() && accessType !== 'keystore') {
+              removeKeystore().then(
+                ({ error }) => error && this.handleUpdateError(error.message),
+              );
+            }
             toggleLoading(false);
             history.push(ROUTE.MY_WALLET);
           });
@@ -238,11 +247,13 @@ class ImportWallet extends PureComponent {
     } else {
       toggleLoading(true);
       onUpdateErrors([]);
-      this.handleUnlockLedger().then(payload => {
-        if (payload) {
-          this.handleLoadLedgerWallets(payload, 0);
-        }
-      });
+      this.handleUnlockLedger()
+        .then(payload => {
+          if (payload) {
+            this.handleLoadLedgerWallets(payload, 0);
+          }
+        })
+        .catch(error => this.handleUpdateError(error.message));
     }
   }
 
@@ -266,14 +277,49 @@ class ImportWallet extends PureComponent {
   }
 
   handleUnlockLedger() {
-    const { importWallet } = this.props;
+    const {
+      intl: { formatMessage },
+      importWallet,
+    } = this.props;
     const hdPath = _get(importWallet, 'input.hdPath', '');
 
+    if (isElectron()) {
+      return electron.transportNodeHid
+        .isSupported()
+        .then(nodeSupported => {
+          if (!nodeSupported) {
+            throw new Error(
+              formatMessage(
+                MSG.IMPORT_WALLET_ERROR_TRANSPORT_NODE_NOT_SUPPORTED,
+              ),
+            );
+          }
+          return Promise.race([
+            electron.transportNodeHid.create(),
+            new Promise((_, reject) => {
+              const timeout = setTimeout(() => {
+                clearTimeout(timeout);
+                reject({
+                  message: formatMessage(
+                    MSG.IMPORT_WALLET_ERROR_DEVICE_NOT_FOUND,
+                  ),
+                });
+              }, 5000);
+            }),
+          ])
+            .then(transport => {
+              return new Eth(transport).getAddress(hdPath, false, true);
+            })
+            .catch(error => this.handleUpdateError(error.message));
+        })
+        .catch(error => this.handleUpdateError(error.message));
+    }
+    const TransportU2F = require('@ledgerhq/hw-transport-u2f').default;
     return TransportU2F.isSupported()
       .then(u2fSupported => {
         if (!u2fSupported) {
           throw new Error(
-            'U2F not supported in this browser. Please try using Google Chrome with a secure (SSL / HTTPS) connection!',
+            formatMessage(MSG.IMPORT_WALLET_ERROR_TRANSPORT_U2F_NOT_SUPPORTED),
           );
         }
         return TransportU2F.create()
@@ -346,26 +392,28 @@ class ImportWallet extends PureComponent {
                     </CardText>
                   </ImporWalletStyler>
                 </Col>
-                <Col className='px-3'>
-                  <ImporWalletStyler
-                    isActive={
-                      _get(importWallet, 'type') === IMPORT_TYPES.META_MASK
-                    }
-                    onClick={() =>
-                      this.handleChangeType(IMPORT_TYPES.META_MASK)
-                    }
-                  >
-                    <CardImg
-                      src={LogoLedger}
-                      alt={formatMessage(
-                        MSG.IMPORT_WALLET_TAB_METAMASK_IMAGE_ALT,
-                      )}
-                    />
-                    <CardText className='mt-3'>
-                      {formatMessage(MSG.IMPORT_WALLET_TAB_METAMASK_TEXT)}
-                    </CardText>
-                  </ImporWalletStyler>
-                </Col>
+                {!isElectron() && (
+                  <Col className='px-3'>
+                    <ImporWalletStyler
+                      isActive={
+                        _get(importWallet, 'type') === IMPORT_TYPES.META_MASK
+                      }
+                      onClick={() =>
+                        this.handleChangeType(IMPORT_TYPES.META_MASK)
+                      }
+                    >
+                      <CardImg
+                        src={LogoLedger}
+                        alt={formatMessage(
+                          MSG.IMPORT_WALLET_TAB_METAMASK_IMAGE_ALT,
+                        )}
+                      />
+                      <CardText className='mt-3'>
+                        {formatMessage(MSG.IMPORT_WALLET_TAB_METAMASK_TEXT)}
+                      </CardText>
+                    </ImporWalletStyler>
+                  </Col>
+                )}
                 <Col className='px-3'>
                   <ImporWalletStyler
                     isActive={
@@ -428,7 +476,9 @@ class ImportWallet extends PureComponent {
                     <MetaMaskForm />
                   )}
                   {_get(importWallet, 'type') === IMPORT_TYPES.RP_OR_PK && (
-                    <RPOrPKForm />
+                    <RPOrPKForm
+                      handleSubmit={this.handleAccessByRecoveryPhrase}
+                    />
                   )}
                   {_get(importWallet, 'type') === IMPORT_TYPES.KEYSTORE && (
                     <KeystoreForm
@@ -547,9 +597,9 @@ const withReducer = injectReducer({ key: DOMAIN_KEY, reducer });
 
 export default compose(
   withConnect,
+  withIntl,
+  withGlobal,
   withReducer,
   withRouter,
   withWeb3,
-  withIntl,
-  withLoading,
 )(ImportWallet);

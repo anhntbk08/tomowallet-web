@@ -34,10 +34,9 @@ const ExchangeInfoStyler = styled.div`
         font-size: 16px;
         span {
           color: #009e73;
-          &.--negative {
-            color: red;
-          }
         }
+        animation: ${({ isLoaded }) =>
+          isLoaded ? 'blinker 0.5s linear 1' : 'none'};
       }
       .exchange-info__data-rate--btc {
         font-size: 12px;
@@ -51,6 +50,8 @@ const ExchangeInfoStyler = styled.div`
       img {
         margin: auto;
       }
+      animation: ${({ isLoaded }) =>
+        isLoaded ? 'bouncer 0.5s linear 1' : 'none'};
     }
     .exchange-info__charts {
       padding-top: 10px;

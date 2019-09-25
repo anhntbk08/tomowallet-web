@@ -205,6 +205,48 @@ export default defineMessages({
     id: `${welcomePagePrefix}.image.alt`,
     defaultMessage: 'Welcome to TomoWallet',
   },
+  WELCOME_FORM_PASSWORD_TITLE: {
+    id: `${welcomePagePrefix}.form.password.title`,
+    defaultMessage: 'Wallet Quick Access',
+  },
+  WELCOME_FORM_PASSWORD_DESCRIPTION: {
+    id: `${welcomePagePrefix}.form.password.description`,
+    defaultMessage:
+      'You can type in password to continue accessing your previous wallet, or you can {alternative}',
+  },
+  WELCOME_FORM_PASSWORD_DESCRIPTION_ALTERNATIVE_LOGIN: {
+    id: `${welcomePagePrefix}.form.password.description.alternative.login`,
+    defaultMessage: 'choose different wallet',
+  },
+  WELCOME_FORM_PASSWORD_BUTTON_LOGIN: {
+    id: `${welcomePagePrefix}.form.password.button.login`,
+    defaultMessage: 'Log In',
+  },
+  WELCOME_FORM_PASSWORD_INPUT_PASSWORD_LABEL: {
+    id: `${welcomePagePrefix}.form.password.input.password.label`,
+    defaultMessage: 'Password',
+  },
+  WELCOME_FORM_PASSWORD_INPUT_PASSWORD_PLACEHOLDER: {
+    id: `${welcomePagePrefix}.form.password.input.password.placeholder`,
+    defaultMessage: 'Enter password...',
+  },
+  WELCOME_FORM_PASSWORD_ERROR_INVALID_PASSWORD: {
+    id: `${welcomePagePrefix}.form.password.error.invalid.password`,
+    defaultMessage: 'Given password is incorrect',
+  },
+  WELCOME_FORM_PASSWORD_ERROR_KEYSTORE_NOT_EXISTS: {
+    id: `${welcomePagePrefix}.form.password.error.keystore.not.exists`,
+    defaultMessage: 'Cannot find any keystore file.',
+  },
+  WELCOME_FORM_PASSWORD_ERROR_INVALID_PRIVATE_KEY: {
+    id: `${welcomePagePrefix}.form.password.error.invalid.privatekey`,
+    defaultMessage: 'Received private key is invalid.',
+  },
+  WELCOME_FORM_PASSWORD_ERROR_RETRIEVE_WALLET_FAILED: {
+    id: `${welcomePagePrefix}.form.password.error.retrieve.wallet.failed`,
+    defaultMessage:
+      'Cannot retrieve wallet information due to corrupted Web3 provider.',
+  },
   // Create Wallet Page
   CREATE_WALLET_TITLE: {
     id: `${createWalletPagePrefix}.title`,
@@ -352,7 +394,7 @@ export default defineMessages({
   RECOVERY_PHRASE_POPUP_KEY_VIEW_CONTENT_QRCODE_ALT: {
     id: `${recoveryPhrasePrefix}.popup.keyview.content.qrcode.alt`,
     defaultMessage:
-      'Click here to view QR Code. Make sure no one else is looking!',
+      'Click here to view your key. Make sure no one else is looking!',
   },
   // Create Wallet - Mnemonic Verification Page
   VERIFICATION_TITLE: {
@@ -475,6 +517,19 @@ export default defineMessages({
   IMPORT_WALLET_ERROR_INVALID_HD_PATH: {
     id: `${importWalletPagePrefix}.error.invalid.hdpath`,
     defaultMessage: 'Invalid HD Path',
+  },
+  IMPORT_WALLET_ERROR_DEVICE_NOT_FOUND: {
+    id: `${importWalletPagePrefix}.error.device.notfound`,
+    defaultMessage: "The system can't find any Ledger device.",
+  },
+  IMPORT_WALLET_ERROR_TRANSPORT_NODE_NOT_SUPPORTED: {
+    id: `${importWalletPagePrefix}.error.transport.node.notsupported`,
+    defaultMessage: 'Node transport not supported in this application.',
+  },
+  IMPORT_WALLET_ERROR_TRANSPORT_U2F_NOT_SUPPORTED: {
+    id: `${importWalletPagePrefix}.error.transport.u2t.notsuppported`,
+    defaultMessage:
+      'U2F not supported in this browser. Please try using Google Chrome with a secure (SSL / HTTPS) connection!',
   },
   IMPORT_WALLET_POPUP_ADDRESS_TITLE: {
     id: `${importWalletPagePrefix}.popup.address.title`,
