@@ -27,10 +27,21 @@ const selectSendTokenForm = createDeepEqualSelector(
   selectMyWalletDomain,
   obj => obj.toJS().sendForm,
 );
+const selectPrivateForm = createDeepEqualSelector(
+  selectMyWalletDomain,
+  obj => obj.toJS().privateSendForm,
+);
+
 const selectSendTokenPopup = createDeepEqualSelector(
   selectMyWalletDomain,
   obj => obj.toJS().sendTokenPopup,
 );
+
+const selectPrivateSendTokenPopup = createDeepEqualSelector(
+  selectMyWalletDomain,
+  obj => obj.toJS().privateSendTokenPopup,
+);
+
 const selectSuccessPopup = createDeepEqualSelector(
   selectMyWalletDomain,
   obj => obj.toJS().successPopup,
@@ -54,6 +65,8 @@ export {
   selectReceiveToKenPopup,
   selectSendTokenForm,
   selectSendTokenPopup,
+  selectPrivateForm,
+  selectPrivateSendTokenPopup,
   selectSuccessPopup,
   selectTableType,
   selectTokenOptions,

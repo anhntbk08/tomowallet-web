@@ -10,11 +10,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'redux';
-import { connect } from 'react-redux';
+import { connect, dispatch } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import _get from 'lodash.get';
 import _isEqual from 'lodash.isequal';
 import _isEmpty from 'lodash.isempty';
+
+import {
+  TextYellowPointer,
+} from '../../../../styles';
 
 // Custom Components
 import CommonTable from '../../../../components/Table';
@@ -29,6 +33,7 @@ import {
 } from '../../selectors';
 import { withIntl } from '../../../../components/IntlProvider';
 import portfolioConfig from './configuration';
+import privacyPortfolioConfig from './privacy-portfolio-conf';
 import { PORTFOLIO_COLUMNS } from '../../constants';
 import { selectWallet } from '../../../Global/selectors';
 import { LIST, ENUM } from '../../../../constants';
@@ -192,6 +197,11 @@ class PortfolioTable extends Component {
     };
   }
 
+  openPrivateSendPopup = (token) => {
+    console.log('private token ', token);
+    this.props.onPrivateSend(token);
+  }
+
   render() {
     const {
       data,
@@ -207,7 +217,7 @@ class PortfolioTable extends Component {
           setConfig={portfolioConfig}
           getConfigProps={{
             formatMessage,
-            openSendTokenPopup,
+            openSendTokenPopup: walletMode === 'normal' ? openSendTokenPopup : this.openPrivateSendPopup,
           }}
           getTableProps={{
             minRows: 3,
@@ -217,6 +227,7 @@ class PortfolioTable extends Component {
               props.className !== '-header' && props.children,
           }}
         />
+        
       </BoxPortfolio>
     );
   }
@@ -266,9 +277,14 @@ const mapStateToProps = () =>
     walletMode: selectMode
   });
 const mapDispatchToProps = dispatch => ({
+  onPrivateSend: (token) => dispatch({
+    type: "TOGGLE_PRIVATE_SEND_TOKEN_POPUP",
+    bool: true,
+    token
+  }),
   onLoadTokenOptions: (params, initialTokens) =>
     dispatch(loadTokenOptions(params, initialTokens)),
-    onToggleLoading: () => dispatch(toggleLoading())
+  onToggleLoading: () => dispatch(toggleLoading())
 });
 const withConnect = connect(
   mapStateToProps,

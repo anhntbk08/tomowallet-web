@@ -91,7 +91,9 @@ export default ({ formatMessage, openSendTokenPopup }) => [
       {
         headerClassName: 'd-none',
         accessor: PORTFOLIO_COLUMNS.SEND,
-        Cell: ({ original }) => (
+        Cell: ({ original }) => {
+          console.log("original ", original);
+          return (
           <TextYellowPointer
             role='presentation'
             onClick={() =>
@@ -103,7 +105,7 @@ export default ({ formatMessage, openSendTokenPopup }) => [
           >
             {formatMessage(MSG.COMMON_BUTTON_SEND)}
           </TextYellowPointer>
-        ),
+        )},
       },
       {
         Cell: ({ original }) => {

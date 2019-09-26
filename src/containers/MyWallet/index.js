@@ -23,6 +23,7 @@ import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import AddressInfo from './subcomponents/AddressInfo';
 import DataTables from './subcomponents/DataTables';
 import SendTokenPopup from './subcomponents/popups/SendToken';
+import PrivateSendTokenPopup from './subcomponents/popups/PrivateSendToken';
 import ReceiveTokenPopup from './subcomponents/popups/ReceiveToken';
 import SuccessPopup from './subcomponents/popups/Success';
 // Utilities
@@ -43,6 +44,7 @@ import {
   selectTableType,
   selectReceiveToKenPopup,
   selectSendTokenPopup,
+  selectPrivateSendTokenPopup,
   selectSendTokenForm,
   selectSuccessPopup,
   selectTokenOptions,
@@ -233,6 +235,7 @@ class MyWallet extends PureComponent {
   }
 
   handleOpenSendTokenPopup(initialValues) {
+    console.log("initialValues ", initialValues);
     const { onToggleSendTokenPopup } = this.props;
     onToggleSendTokenPopup(true, initialValues);
   }
@@ -649,13 +652,14 @@ class MyWallet extends PureComponent {
       successPopup,
       tableType,
       tokenOptions,
+      privateSendToKenPopup,
       wallet,
     } = this.props;
 
     return (
       <Fragment>
         <Helmet>
-          <title>AAAA{formatMessage(MSG.MY_WALLET_TITLE)}</title>
+          <title>{formatMessage(MSG.MY_WALLET_TITLE)}</title>
         </Helmet>
         <AddressInfo
           coinData={coinData}
@@ -680,6 +684,18 @@ class MyWallet extends PureComponent {
           updateInput={onUpdateSendTokenInput}
           updateSendTokenPopupStage={onUpdateSendTokenPopupStage}
         />
+        <PrivateSendTokenPopup
+          addFullAmount={this.handleAddFullAmount}
+          closePopup={this.handleCloseSendTokenPopup}
+          confirmBeforeSend={this.handleConfirmBeforeSend}
+          formValues={sendTokenForm}
+          popupData={privateSendToKenPopup}
+          submitSendToken={this.handleGetSendAction}
+          tokenOptions={tokenOptions}
+          updateInput={onUpdateSendTokenInput}
+          updateSendTokenPopupStage={onUpdateSendTokenPopupStage}
+        />
+        
         <SuccessPopup
           amount={_get(sendTokenForm, [SEND_TOKEN_FIELDS.TRANSFER_AMOUNT])}
           togglePopup={onToggleSuccessPopup}
@@ -775,6 +791,7 @@ const mapStateToProps = () =>
     receivePopup: selectReceiveToKenPopup,
     sendTokenForm: selectSendTokenForm,
     sendToKenPopup: selectSendTokenPopup,
+    privateSendToKenPopup: selectPrivateSendTokenPopup,
     successPopup: selectSuccessPopup,
     tableType: selectTableType,
     tokenOptions: selectTokenOptions,

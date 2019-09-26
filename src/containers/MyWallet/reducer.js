@@ -59,6 +59,11 @@ const initialState = fromJS({
     isOpen: false,
     stage: SEND_TOKEN_STAGES.FORM,
   },
+  privateSendTokenPopup: {
+    errors: {},
+    isOpen: false,
+    stage: SEND_TOKEN_STAGES.FORM,
+  },
   successPopup: {
     isOpen: false,
     txHash: '',
@@ -170,6 +175,22 @@ export default (state = initialState, action) => {
           .setIn(['sendTokenPopup', 'errors'], {});
       }
       return state.setIn(['sendTokenPopup', 'isOpen'], false);
+    }
+    case 'TOGGLE_PRIVATE_SEND_TOKEN_POPUP': {
+      if (action.bool) {
+        console.log("initialState.privateSendTokenPopup ", state.privateSendTokenPopup);
+        return state
+          .setIn(['privateSendTokenPopup', 'isOpen'], true)
+          .set('sendPrivateForm', {
+            ...initialSendForm,
+            ...{
+              "token": action.token,
+              "isTokenSpecific": true
+            },
+          })
+          .setIn(['privateSendTokenPopup', 'errors'], {});
+      }
+      return state.setIn(['privateSendTokenPopup', 'isOpen'], false);
     }
     case TOGGLE_SUCCESS_POPUP: {
       const newState = state
