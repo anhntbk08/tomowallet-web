@@ -95,7 +95,7 @@ const getWalletInfo = web3 => {
  * @param {String} address A valid hex-string address
  */
 const getBalance = address => {
-  const networkKey = getNetwork() || ENUM.NETWORK_TYPE.TOMOCHAIN_MAINNET;
+  const networkKey = getNetwork() || ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET;
   const networkURL = _get(RPC_SERVER, [networkKey, 'host']);
   const web3 = new Web3(networkURL);
 

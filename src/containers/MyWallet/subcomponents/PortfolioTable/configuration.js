@@ -127,7 +127,7 @@ export default ({ formatMessage, openSendTokenPopup }) => [
                   '',
                 )}`;
                 break;
-              case ENUM.NETWORK_TYPE.TOMOCHAIN_MAINNET:
+              case ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET:
                 viewLink = `${baseUrl}/${_get(
                   original,
                   [PORTFOLIO_COLUMNS.TYPE],

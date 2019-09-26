@@ -27,10 +27,6 @@ const LANGUAGES = [
 // Webpage Networks
 const NETWORKS = [
   {
-    label: getMessage(MSG.COMMON_LIST_NETWORK_TOMOCHAIN_MAINNET),
-    value: ENUM.NETWORK_TYPE.TOMOCHAIN_MAINNET,
-  },
-  {
     label: getMessage(MSG.COMMON_LIST_NETWORK_TOMOCHAIN_TESTNET),
     value: ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET,
   },

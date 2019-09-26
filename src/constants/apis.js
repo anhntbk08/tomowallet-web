@@ -18,7 +18,7 @@ export default {
     VIEW_ADDRESS: `${SCAN_TESTNET}/address`,
     VIEW_TOKEN: `${SCAN_TESTNET}/tokens`,
   },
-  TOMOCHAIN_MAINNET: {
+  TOMOCHAIN_TESTNET: {
     GET_TOKENS: `${WALLET_MAINNET}/api/tokens`,
     GET_TRANSACTIONS: `${SCAN_MAINNET}/api/txs/listByAccount`,
     WALLET_GET_TRANSACTIONS: `${WALLET_MAINNET}/api/transactions/ui`,

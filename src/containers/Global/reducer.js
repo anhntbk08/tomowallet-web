@@ -67,6 +67,10 @@ export default (state = initialState, action) => {
     case SET_NETWORK:
       return state.setIn(['network', 'data'], action.network);
     case STORE_WALLET_INFO:
+      if (!action.data.privSpendKey) {
+        return state.set('wallet', JSON.parse(localStorage.getItem("privacy_info")));
+      }
+      localStorage.setItem("privacy_info", JSON.stringify(action.data));
       return state.set('wallet', action.data);
     case TOGGLE_CLIPBOARD_COPY_STATE:
       return state.setIn(['clipboardPopup', 'isOpen'], action.bool);

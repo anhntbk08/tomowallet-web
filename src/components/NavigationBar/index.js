@@ -198,7 +198,7 @@ class NavigationBar extends PureComponent {
       networkConfirmationPopup,
       onToggleNetworkConfirmationPopup,
     } = this.props;
-    console.log(this.props.walletMode);
+
     return (
       <Fragment>
         <NavBarStyler light expand='md'>

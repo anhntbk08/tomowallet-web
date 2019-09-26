@@ -65,7 +65,7 @@ class Web3Provider extends Component {
       const web3Info = getWeb3Info();
       if (_get(web3Info, 'recoveryPhrase')) {
         const { recoveryPhrase } = web3Info;
-        const networkKey = getNetwork() || ENUM.NETWORK_TYPE.TOMOCHAIN_MAINNET;
+        const networkKey = getNetwork() || ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET;
         const rpcServer = _get(RPC_SERVER, [networkKey]);
         const newWeb3 = generateWeb3(recoveryPhrase, rpcServer);
 
@@ -78,7 +78,7 @@ class Web3Provider extends Component {
         if (networkKey) {
           this.handleUpdateRpcServer(networkKey);
         } else {
-          this.handleUpdateRpcServer(ENUM.NETWORK_TYPE.TOMOCHAIN_MAINNET);
+          this.handleUpdateRpcServer(ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET);
         }
       }
     }

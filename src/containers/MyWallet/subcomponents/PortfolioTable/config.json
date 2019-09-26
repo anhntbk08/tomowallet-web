@@ -1,0 +1,401 @@
+{
+    "RPC_END_POINT": "https://testnet.tomochain.com",
+    "PRIVACY_SMART_CONTRACT_ADDRESS": "0x5D03BB76BdF65a6CEF3e96F3aD37D0874f3B21A7",
+    "WALLETS": [
+        {
+            "privateKey": "786a37d16d0d6877b24b53aafdf7d29c7e53b7be43134c3db7b3e2eedd66ddea",
+            "address": "0x16E409004d62eaFB987DB08F038BFd1FCC77c289"
+        },
+        {
+            "privateKey": "dbf915cf535024fb55b00cf2d730c9e27b5420bcd8363551b9884e1df79afbae",
+            "address": "0x3d8dE6eee3b8890FB7E1f9BA7d50D1866D6c3668"
+        }
+    ],
+    "PRIVACYADD_MAPPING_SMART_CONTRACT": "0xbb32d285e4cF30d439F8106bbA926941730fbf1E",
+    "PRIVACYADD_MAPPING_ABI": [
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_normal",
+                    "type": "address"
+                }
+            ],
+            "name": "getPrivacyAddress",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bytes"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_privacyAddress",
+                    "type": "bytes"
+                }
+            ],
+            "name": "register",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_privacy",
+                    "type": "bytes"
+                }
+            ],
+            "name": "getNormalAddress",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ],
+    "PRIVACY_ABI": [
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "b",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "bytesToUint",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_pubkeyX",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_pubkeyY",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_txPubKeyX",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_txPubKeyY",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_mask",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "deposit",
+            "outputs": [],
+            "payable": true,
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_inputIDs",
+                    "type": "uint256[]"
+                },
+                {
+                    "name": "_outputs",
+                    "type": "uint256[]"
+                },
+                {
+                    "name": "_amounts",
+                    "type": "uint256[]"
+                }
+            ],
+            "name": "privateSend",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_utxoIndex",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_amount1",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_amount2",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_rs",
+                    "type": "bytes32[2]"
+                },
+                {
+                    "name": "recipient",
+                    "type": "address"
+                },
+                {
+                    "name": "_commitmentAfter",
+                    "type": "uint256[2]"
+                }
+            ],
+            "name": "withdrawFunds",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "payable": true,
+            "stateMutability": "payable",
+            "type": "fallback"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "name": "_commitmentX",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "name": "_commitmentYBit",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": false,
+                    "name": "_pubkeyX",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "name": "_pubkeyYBit",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": false,
+                    "name": "_amount",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "name": "_txPubX",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "name": "_txPubYBit",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": false,
+                    "name": "_index",
+                    "type": "uint256"
+                }
+            ],
+            "name": "NewUTXO",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "name": "_in1",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "name": "_in2",
+                    "type": "uint256"
+                }
+            ],
+            "name": "InputSum",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "name": "_out1",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "name": "_out2",
+                    "type": "uint256"
+                }
+            ],
+            "name": "OutputSum",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "name": "_hash",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "HashSign",
+            "type": "event"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "index",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getUTXO",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "name": "",
+                    "type": "uint8"
+                },
+                {
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "name": "",
+                    "type": "uint8"
+                },
+                {
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "spentUTXOs",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "utxos",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "name": "yBit",
+                            "type": "uint8"
+                        },
+                        {
+                            "name": "x",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "commitment",
+                    "type": "tuple"
+                },
+                {
+                    "components": [
+                        {
+                            "name": "yBit",
+                            "type": "uint8"
+                        },
+                        {
+                            "name": "x",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "pubkey",
+                    "type": "tuple"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "components": [
+                        {
+                            "name": "yBit",
+                            "type": "uint8"
+                        },
+                        {
+                            "name": "x",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "txPub",
+                    "type": "tuple"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}

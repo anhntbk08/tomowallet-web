@@ -14,6 +14,8 @@ import { connect } from 'react-redux';
 import _get from 'lodash.get';
 import { Row, Col } from 'reactstrap';
 import QRCode from 'qrcode.react';
+import { selectMode } from '../../Global/selectors';
+import { createStructuredSelector } from 'reselect';
 // Custom Components
 import ExchangeInfo from './ExchangeInfo';
 import { MediumButtonStyler, HeadingSmall } from '../../../styles';
@@ -42,12 +44,12 @@ class AddressInfo extends PureComponent {
 
   render() {
     const {
-      coinData,
       intl: { formatMessage },
       openReceiveTokenPopup,
       openSendTokenPopup,
       wallet,
     } = this.props;
+
     return (
       <div>
         <div className='box-address'>
@@ -58,13 +60,13 @@ class AddressInfo extends PureComponent {
               className='mb-sm-3 mb-lg-0'
             >
               <div className='bg_gray'>
-                <ExchangeInfo coinData={coinData} />
+                <ExchangeInfo />
               </div>
             </Col>
             <Col xs={12} lg={{ size: 7, order: 1 }}>
               <div className='d-flex align-items-center bg_gray'>
                 <Row className='fullwidth align-items-center'>
-                  <Col md={8}>
+                  { this.props.walletMode === 'normal' ? <Col md={8}>
                     <HeadingSmall>
                       {formatMessage(MSG.MY_WALLET_SECTION_ADDRESS_TITLE)}
                     </HeadingSmall>
@@ -90,10 +92,27 @@ class AddressInfo extends PureComponent {
                         </MediumButtonStyler>
                       </Col>
                     </Row>
+                  </Col> :
+                  <Col md={8}>
+                    <br/>
+                    <HeadingSmall>
+                      {'PRIVACY ADDRESS'}
+                    </HeadingSmall>
+                    <TextBlue
+                      role='presentation'
+                      onClick={this.handleCopyToClipboard}
+                      className='text-break'
+                    >
+                      {_get(wallet, 'pubAddr', '')}
+                    </TextBlue>
                   </Col>
+                  }
                   <Col md={4} className='d-flex justify-content-end'>
                     <div className='qrc_bd'>
-                      <QRCode value={_get(wallet, 'address', '')} />
+                    { this.props.walletMode === 'normal' ? 
+                        <QRCode value={_get(wallet, 'address', '')} /> :
+                        <QRCode value={_get(wallet, 'pubAddr', '')} />
+                    }
                     </div>
                   </Col>
                 </Row>
@@ -109,8 +128,6 @@ class AddressInfo extends PureComponent {
 
 // ===== PROP TYPES =====
 AddressInfo.propTypes = {
-  /** TomoChain coin data */
-  coinData: PropTypes.object,
   /** React Intl's instance object */
   intl: PropTypes.object,
   /** Action to show/hide clipboard popup */
@@ -124,7 +141,6 @@ AddressInfo.propTypes = {
 };
 
 AddressInfo.defaultProps = {
-  coinData: {},
   intl: {},
   onToggleClipboardPopup: () => {},
   openReceiveTokenPopup: () => {},
@@ -134,11 +150,15 @@ AddressInfo.defaultProps = {
 // ======================
 
 // ===== INJECTIONS =====
+const mapStateToProps = () =>
+  createStructuredSelector({
+    walletMode: selectMode
+  });
 const mapDispatchToProps = dispatch => ({
   onToggleClipboardPopup: bool => dispatch(toggleClipboardCopyState(bool)),
 });
 const withConnect = connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps,
 );
 // ======================

@@ -85,7 +85,7 @@ export default defineMessages({
     id: `${listPrefix}.network.tomochain.testnet`,
     defaultMessage: 'TomoChain TestNet',
   },
-  COMMON_LIST_NETWORK_TOMOCHAIN_MAINNET: {
+  COMMON_LIST_NETWORK_TOMOCHAIN_TESTNET: {
     id: `${listPrefix}.network.tomochain.mainnet`,
     defaultMessage: 'TomoChain MainNet',
   },

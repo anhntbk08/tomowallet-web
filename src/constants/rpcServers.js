@@ -1,5 +1,5 @@
 export default {
-  TOMOCHAIN_MAINNET: {
+  TOMOCHAIN_TESTNET: {
     type: 'http',
     host: 'https://rpc.tomochain.com',
     networkId: 88,

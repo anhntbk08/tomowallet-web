@@ -40,7 +40,7 @@ class App extends PureComponent {
   componentDidMount() {
     const { onStoreWallet, updateWeb3 } = this.props;
     const walletParams = getWeb3Info();
-    const networkKey = getNetwork() || ENUM.NETWORK_TYPE.TOMOCHAIN_MAINNET;
+    const networkKey = getNetwork() || ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET;
 
     if (_get(walletParams, 'recoveryPhrase')) {
       const { recoveryPhrase } = walletParams;
