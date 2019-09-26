@@ -90,6 +90,36 @@ class AddressInfo extends PureComponent {
                       </Col>
                     </Row>
                   </Col>
+
+                  <Col md={8}>
+                    <br/>
+                    <HeadingSmall>
+                      {'PRIVACY ADDRESS'}
+                    </HeadingSmall>
+                    <TextBlue
+                      role='presentation'
+                      onClick={this.handleCopyToClipboard}
+                      className='text-break'
+                    >
+                      {_get(wallet, 'pubAddr', '')}
+                    </TextBlue>
+                    <Row className='mt-4'>
+                      <Col md={6} className='pr-2'>
+                        <MediumButtonStyler onClick={openSendTokenPopup}>
+                          {formatMessage(MSG.COMMON_BUTTON_SEND)}
+                        </MediumButtonStyler>
+                      </Col>
+                      <Col md={6} className='pl-2'>
+                        <MediumButtonStyler
+                          btnBlue
+                          onClick={openReceiveTokenPopup}
+                        >
+                          {formatMessage(MSG.COMMON_BUTTON_RECEIVE)}
+                        </MediumButtonStyler>
+                      </Col>
+                    </Row>
+                  </Col>
+
                   <Col md={4} className='d-flex justify-content-end'>
                     <div className='qrc_bd'>
                       <QRCode value={_get(wallet, 'address', '')} />
