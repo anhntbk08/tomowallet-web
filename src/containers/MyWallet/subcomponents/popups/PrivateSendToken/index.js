@@ -20,8 +20,9 @@ import { SendTokenPopupStyler as PrivateSendPopupStyler } from './style';
 import { withIntl } from '../../../../../components/IntlProvider';
 import { MSG } from '../../../../../constants';
 import { SEND_TOKEN_STAGES } from '../../../constants';
-import { selectWallet } from '../../../../Global/selectors';
+import { selectWallet, selectPrivacyAccount, selectLoadingPrivacyState } from '../../../../Global/selectors';
 import { selectPrivateForm } from '../../../../MyWallet/selectors';
+
 
 // ===================
 
@@ -53,13 +54,25 @@ class PrivateSendTokenPopup extends PureComponent {
   }
 
   handleClosePopup() {
-    const { closePopup } = this.props;
-    closePopup(false);
+    this.props.dispatch({
+      type: 'TOGGLE_PRIVATE_SEND_TOKEN_POPUP',
+      bool: false
+    })
+  }
+
+  updateFields = (value) => {
+
+    this.setState({
+      form: value
+    });
+  }
+
+  privateSend = () => {
+
   }
 
   handleGetButtonConfig() {
     const {
-      confirmBeforeSend,
       intl: { formatMessage },
       popupData,
       submitSendToken,
@@ -67,10 +80,14 @@ class PrivateSendTokenPopup extends PureComponent {
     } = this.props;
     const { isRequested } = this.state;
 
+    const _self = this;
+
     return (
       (_get(popupData, 'stage') === SEND_TOKEN_STAGES.FORM && {
         primary: {
-          action: confirmBeforeSend,
+          action: () => {
+            _self.privateSend()
+          },
           btnYellow: true,
           label: formatMessage(MSG.COMMON_BUTTON_SEND),
         },
@@ -112,11 +129,12 @@ class PrivateSendTokenPopup extends PureComponent {
       (_get(popupData, 'stage') === SEND_TOKEN_STAGES.FORM && {
         Content: FormContent,
         getContentProps: {
+          updateFields: this.updateFields,
           addFullAmount,
           errors: _get(popupData, 'errors', {}),
           formatMessage,
           formValues,
-          tokenOptions,
+          tokenOptions: tokenOptions.data,
           updateInput,
         },
       }) ||
@@ -139,10 +157,9 @@ class PrivateSendTokenPopup extends PureComponent {
 
   render() {
     const {
-      intl: { formatMessage },
       popupData,
     } = this.props;
-    console.log('private send popup ',popupData);
+    
     return (
       <PrivateSendPopupStyler
         button={this.handleGetButtonConfig()}
@@ -201,7 +218,9 @@ PrivateSendTokenPopup.defaultProps = {
 const mapStateToProps = () =>
   createStructuredSelector({
     wallet: selectWallet,
-    form: selectPrivateForm
+    form: selectPrivateForm,
+    tokenOptions: selectPrivacyAccount,
+    needReload: selectLoadingPrivacyState
   });
 const withConnect = connect(mapStateToProps);
 // ======================

@@ -21,6 +21,7 @@
     "immutable": "4.0.0-rc.12",
     "invariant": "2.2.4",
     "loadable-components": "2.2.3",
+    "lodash": "^4.17.15",
     "lodash.conformsto": "4.15.0",
     "lodash.get": "4.4.2",
     "lodash.isempty": "4.4.0",
@@ -56,7 +57,9 @@
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
     "styled-components": "4.3.2",
-    "tomoprivacyjs": "^0.2.2",
+    "sweetalert2": "^8.17.6",
+    "sweetalert2-react-content": "^1.1.0",
+    "tomoprivacyjs": "^0.2.7",
     "truffle-hdwallet-provider": "1.0.14",
     "web3": "1.2.1"
   },

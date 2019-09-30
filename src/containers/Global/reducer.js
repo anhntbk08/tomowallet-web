@@ -47,7 +47,9 @@ const initialState = fromJS({
   },
   wallet: null,
   walletPopup: initialWalletPopupState,
-  mode: 'normal' // normal and privacy
+  mode: 'normal', // normal and privacy
+  isLoadingPrvacy: false,
+  privacyAcc: {}
 });
 // =============================
 
@@ -97,8 +99,17 @@ export default (state = initialState, action) => {
     case UPDATE_WALLET_POPUP_STAGE:
       return state.setIn(['walletPopup', 'stage'], action.stage);
     case 'TOGGLE_PRIVACY_MODE':
-      console.log(state.get('mode'))
       return state.set('mode', state.get('mode') === 'normal' ? 'privacy' : 'normal');
+    case 'UPDATE_PRIVACY_BALANCE': {
+      return state.set('privacyAcc', action.data);
+    }
+    case 'RELOAD_PRIVACY_BLANCE': {
+      return state.set('isLoadingPrvacy', true);
+    }
+    case 'FINISH_RELOAD_PRIVACY_BLANCE': {
+      return state.set('isLoadingPrvacy', false);
+    }
+    
     default:
       return state;
   }

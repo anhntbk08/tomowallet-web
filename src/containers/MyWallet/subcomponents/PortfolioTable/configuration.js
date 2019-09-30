@@ -28,7 +28,7 @@ import { convertAmountWithDecimals } from '../../../../utils/blockchain';
 // ===================
 
 // ===== CONFIGURATION =====
-export default ({ formatMessage, openSendTokenPopup }) => [
+export default ({ formatMessage, openSendTokenPopup, onWithdraw }) => [
   {
     Header: formatMessage(MSG.MY_WALLET_TABLE_PORTFOLIO_HEADER_TOKEN_NAME),
     columns: [
@@ -92,7 +92,24 @@ export default ({ formatMessage, openSendTokenPopup }) => [
         headerClassName: 'd-none',
         accessor: PORTFOLIO_COLUMNS.SEND,
         Cell: ({ original }) => {
-          console.log("original ", original);
+          return (
+          <TextYellowPointer
+            role='presentation'
+            onClick={() =>
+              onWithdraw({
+                [SEND_TOKEN_FIELDS.TOKEN]: original,
+                isTokenSpecific: true,
+              })
+            }
+          >
+            Withdraw 15 tomo
+          </TextYellowPointer>
+        )},
+      },
+      {
+        headerClassName: 'd-none',
+        accessor: PORTFOLIO_COLUMNS.SEND,
+        Cell: ({ original }) => {
           return (
           <TextYellowPointer
             role='presentation'
@@ -107,69 +124,7 @@ export default ({ formatMessage, openSendTokenPopup }) => [
           </TextYellowPointer>
         )},
       },
-      {
-        Cell: ({ original }) => {
-          const networkKey = getNetwork();
-          const address = _get(getWeb3Info(), 'address', '');
-          const baseUrl = _get(API, [networkKey, 'VIEW_TOKEN'], '');
-          const tokenType = _get(original, [PORTFOLIO_COLUMNS.TYPE], '');
-          let viewLink = '';
-          if (tokenType === ENUM.TOKEN_TYPE.CURRENCY) {
-            viewLink = `${_get(
-              API,
-              [networkKey, 'VIEW_ADDRESS'],
-              '',
-            )}/${address}`;
-          } else {
-            switch (networkKey) {
-              case ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET:
-                viewLink = `${baseUrl}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TOKEN_ADDRESS],
-                  '',
-                )}`;
-                break;
-              case ENUM.NETWORK_TYPE.TOMOCHAIN_TESTNET:
-                viewLink = `${baseUrl}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TYPE],
-                  '',
-                ).toLowerCase()}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TOKEN_ADDRESS],
-                  '',
-                )}`;
-                break;
-              default:
-                viewLink = `${baseUrl}/${_get(
-                  original,
-                  [PORTFOLIO_COLUMNS.TOKEN_ADDRESS],
-                  '',
-                )}`;
-            }
-          }
-
-          return (
-            <UncontrolledDropdown>
-              <DropdownToggleMainStyle>
-                <div className='text-right'>
-                  <FontAwesomeIcon icon='ellipsis-v' />
-                </div>
-              </DropdownToggleMainStyle>
-              <DropdownMenuMainStyler right>
-                <a href={viewLink} rel='noopener noreferrer' target='_blank'>
-                  {formatMessage(
-                    MSG.MY_WALLET_TABLE_PORTFOLIO_CELL_ACTION_VIEW_ON_TOMOSCAN,
-                    {
-                      token: _get(original, [PORTFOLIO_COLUMNS.TOKEN_NAME], ''),
-                    },
-                  )}
-                </a>
-              </DropdownMenuMainStyler>
-            </UncontrolledDropdown>
-          );
-        },
-      },
+      
     ],
   },
 ];

@@ -39,9 +39,20 @@ const selectWalletPopup = createDeepEqualSelector(
   selectGlobalDomain,
   obj => obj.toJS().walletPopup,
 );
+
+const selectPrivacyAccount = createDeepEqualSelector(
+  selectGlobalDomain,
+  obj => obj.toJS().privacyAcc,
+);
+
 const selectMode = createDeepEqualSelector(
   selectGlobalDomain,
   obj => obj.toJS().mode,
+);
+
+const selectLoadingPrivacyState = createDeepEqualSelector(
+  selectGlobalDomain,
+  obj => obj.toJS().isLoadingPrvacy,
 );
 // =====================
 
@@ -53,5 +64,7 @@ export {
   selectNetworkData,
   selectWallet,
   selectWalletPopup,
-  selectMode
+  selectMode,
+  selectPrivacyAccount,
+  selectLoadingPrivacyState
 };

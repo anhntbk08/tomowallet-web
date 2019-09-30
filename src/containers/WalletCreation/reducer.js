@@ -30,7 +30,7 @@ import {
   UPDATE_PASSWORD_POPUP_STATE,
 } from './constants';
 import { shuffleArray } from '../../utils';
-import {address as Address} from 'tomoprivacyjs';
+import {Address} from 'tomoprivacyjs';
 import { stat } from 'fs';
 // const Stealth = require('../stealth/dist').stealth;
 // ===================

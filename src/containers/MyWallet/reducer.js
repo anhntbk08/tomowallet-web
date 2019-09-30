@@ -178,7 +178,6 @@ export default (state = initialState, action) => {
     }
     case 'TOGGLE_PRIVATE_SEND_TOKEN_POPUP': {
       if (action.bool) {
-        console.log("initialState.privateSendTokenPopup ", state.privateSendTokenPopup);
         return state
           .setIn(['privateSendTokenPopup', 'isOpen'], true)
           .set('sendPrivateForm', {

@@ -67,7 +67,7 @@ import {
 import { withWeb3 } from '../../components/Web3';
 import { withIntl } from '../../components/IntlProvider';
 import { storeWallet } from '../Global/actions';
-import {address as Address} from 'tomoprivacyjs';
+import {Address} from 'tomoprivacyjs';
 import LogoLedger from '../../assets/images/logo-ledger.png';
 import LogoKey from '../../assets/images/logo-key.png';
 

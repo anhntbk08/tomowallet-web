@@ -26,7 +26,13 @@ import { MSG } from '../../../constants';
 import { TextBlue } from '../../../styles';
 import { toggleClipboardCopyState } from '../../Global/actions';
 import { copyToClipboard } from '../../../utils';
+import Web3 from 'web3';
+import TestConfig from '../config.json';
+import HDWalletProvider from "truffle-hdwallet-provider";
+import { UTXO, Stealth } from 'tomoprivacyjs';
 // ===================
+
+const TOMO = 1000000000000000000;
 
 // ===== MAIN COMPONENT =====
 class AddressInfo extends PureComponent {
@@ -40,6 +46,50 @@ class AddressInfo extends PureComponent {
     const { onToggleClipboardPopup, wallet } = this.props;
     copyToClipboard(_get(wallet, 'address', ''));
     onToggleClipboardPopup(true);
+  }
+
+  handleDeposit = () => {
+    const { wallet } = this.props;
+    let provider = new HDWalletProvider(wallet.privSpendKey, TestConfig.RPC_END_POINT);
+    const web3 = new Web3(provider);
+
+    try {
+      var privacyContract = new web3.eth.Contract(TestConfig.PRIVACY_ABI, TestConfig.PRIVACY_SMART_CONTRACT_ADDRESS, {
+        from: wallet.address, // default from address
+        gasPrice: '250000000', // default gas price in wei, 20 gwei in this case,
+        gas: '10000000'
+      });
+      let sender = new Stealth(this.props.wallet);
+  
+      // create proof for a transaction 
+      let proof = sender.genTransactionProof(15*TOMO, sender.pubSpendKey, sender.pubViewKey);
+
+      privacyContract.methods.deposit(
+        '0x' + proof.onetimeAddress.toString('hex').substr(2, 64), // the X part of curve 
+        '0x' + proof.onetimeAddress.toString('hex').substr(-64), // the Y part of curve
+        '0x' + proof.txPublicKey.toString('hex').substr(2, 64), // the X part of curve
+        '0x' + proof.txPublicKey.toString('hex').substr(-64), // the Y par of curve,
+        '0x' + proof.mask,
+        '0x' + proof.encryptedAmount,// encrypt of amount using ECDH,
+        '0x' + proof.encryptedMask
+      )
+        .send({
+          from: wallet.address, // should random
+          // from: '0x28aedCeA19563B061b32a640C49725a69C5690d3', // should be random each time
+          value: 15 * TOMO
+        })
+        .on('error', function (error) {
+          alert(error);
+        })
+        .then((receipt) => {
+          console.log('receipt.events.NewUTXO ', receipt.events.NewUTXO);
+          this.props.dispatch({
+            type: "RELOAD_PRIVACY_BLANCE"
+          });
+        });
+    } catch (ex) {
+      console.log(ex);
+    }
   }
 
   render() {
@@ -66,7 +116,7 @@ class AddressInfo extends PureComponent {
             <Col xs={12} lg={{ size: 7, order: 1 }}>
               <div className='d-flex align-items-center bg_gray'>
                 <Row className='fullwidth align-items-center'>
-                  { this.props.walletMode === 'normal' ? <Col md={8}>
+                  {this.props.walletMode === 'normal' ? <Col md={8}>
                     <HeadingSmall>
                       {formatMessage(MSG.MY_WALLET_SECTION_ADDRESS_TITLE)}
                     </HeadingSmall>
@@ -93,26 +143,33 @@ class AddressInfo extends PureComponent {
                       </Col>
                     </Row>
                   </Col> :
-                  <Col md={8}>
-                    <br/>
-                    <HeadingSmall>
-                      {'PRIVACY ADDRESS'}
-                    </HeadingSmall>
-                    <TextBlue
-                      role='presentation'
-                      onClick={this.handleCopyToClipboard}
-                      className='text-break'
-                    >
-                      {_get(wallet, 'pubAddr', '')}
-                    </TextBlue>
-                  </Col>
+                    <Col md={8}>
+                      <br />
+                      <HeadingSmall>
+                        {'PRIVACY ADDRESS'}
+                      </HeadingSmall>
+                      <TextBlue
+                        role='presentation'
+                        onClick={this.handleCopyToClipboard}
+                        className='text-break'
+                      >
+                        {_get(wallet, 'pubAddr', '')}
+                      </TextBlue>
+                      <Row className='mt-4'>
+                        <Col md={12} className='pr-2'>
+                          <MediumButtonStyler onClick={this.handleDeposit}>
+                            Deposit 15 TOMO
+                        </MediumButtonStyler>
+                        </Col>
+                      </Row>
+                    </Col>
                   }
                   <Col md={4} className='d-flex justify-content-end'>
                     <div className='qrc_bd'>
-                    { this.props.walletMode === 'normal' ? 
+                      {this.props.walletMode === 'normal' ?
                         <QRCode value={_get(wallet, 'address', '')} /> :
                         <QRCode value={_get(wallet, 'pubAddr', '')} />
-                    }
+                      }
                     </div>
                   </Col>
                 </Row>
@@ -142,9 +199,9 @@ AddressInfo.propTypes = {
 
 AddressInfo.defaultProps = {
   intl: {},
-  onToggleClipboardPopup: () => {},
-  openReceiveTokenPopup: () => {},
-  openSendTokenPopup: () => {},
+  onToggleClipboardPopup: () => { },
+  openReceiveTokenPopup: () => { },
+  openSendTokenPopup: () => { },
   wallet: {},
 };
 // ======================
@@ -155,6 +212,7 @@ const mapStateToProps = () =>
     walletMode: selectMode
   });
 const mapDispatchToProps = dispatch => ({
+  dispatch: dispatch,
   onToggleClipboardPopup: bool => dispatch(toggleClipboardCopyState(bool)),
 });
 const withConnect = connect(

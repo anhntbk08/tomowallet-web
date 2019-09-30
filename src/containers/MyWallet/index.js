@@ -655,7 +655,7 @@ class MyWallet extends PureComponent {
       privateSendToKenPopup,
       wallet,
     } = this.props;
-
+    console.log("privateSendToKenPopup ",privateSendToKenPopup);
     return (
       <Fragment>
         <Helmet>
@@ -686,14 +686,9 @@ class MyWallet extends PureComponent {
         />
         <PrivateSendTokenPopup
           addFullAmount={this.handleAddFullAmount}
-          closePopup={this.handleCloseSendTokenPopup}
-          confirmBeforeSend={this.handleConfirmBeforeSend}
           formValues={sendTokenForm}
           popupData={privateSendToKenPopup}
-          submitSendToken={this.handleGetSendAction}
-          tokenOptions={tokenOptions}
-          updateInput={onUpdateSendTokenInput}
-          updateSendTokenPopupStage={onUpdateSendTokenPopupStage}
+          submitSendToken={this.handleGetSendPrivacyAction}
         />
         
         <SuccessPopup
