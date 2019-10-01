@@ -46,7 +46,7 @@ class RPOrPKForm extends PureComponent {
             placeholder={formatMessage(
               MSG.IMPORT_WALLET_TAB_RECOVERY_PHRASE_INPUT_PLACEHOLDER,
             )}
-            value={'786a37d16d0d6877b24b53aafdf7d29c7e53b7be43134c3db7b3e2eedd66ddea'}
+            value={_get(importWallet, 'input.recoveryPhrase', '')}
             onChange={e => onUpdateInput('recoveryPhrase', e.target.value)}
             invalid={errors.length > 0}
           />

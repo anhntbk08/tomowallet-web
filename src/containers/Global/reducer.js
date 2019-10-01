@@ -24,6 +24,8 @@ import {
   WALLET_POPUP_CONTENT_TAB,
 } from './constants';
 import { LIST } from '../../constants';
+import toBN from 'number-to-bn';
+
 // ===================
 
 // ===== INITIAL VARIABLES =====
@@ -104,7 +106,17 @@ export default (state = initialState, action) => {
       return state.set('privacyAcc', action.data);
     }
     case 'RELOAD_PRIVACY_BLANCE': {
-      return state.set('isLoadingPrvacy', true);
+      const privacyData = state.get("privacyAcc");
+      privacyData.utxos.push(action.data)
+      const tokenData = privacyData.data[0];
+      tokenData.balance = toBN(tokenData.balance).add(toBN(action.data.balance)).toString(10);
+      privacyData.data[0] = tokenData;
+      const newBalance = toBN(tokenData.balance).add(toBN(action.data.balance)).toString(10);
+   
+      return state.updateIn(["privacyAcc", 'data'], data => [{
+        ...data[0],
+        balance: newBalance
+      }])
     }
     case 'FINISH_RELOAD_PRIVACY_BLANCE': {
       return state.set('isLoadingPrvacy', false);

@@ -32,6 +32,11 @@ import HDWalletProvider from "truffle-hdwallet-provider";
 import { UTXO, Stealth } from 'tomoprivacyjs';
 // ===================
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+const MySwal = withReactContent(Swal);
+
+
 const TOMO = 1000000000000000000;
 
 // ===== MAIN COMPONENT =====
@@ -52,7 +57,9 @@ class AddressInfo extends PureComponent {
     const { wallet } = this.props;
     let provider = new HDWalletProvider(wallet.privSpendKey, TestConfig.RPC_END_POINT);
     const web3 = new Web3(provider);
-
+    this.props.dispatch({
+      type: "TOMO_WALLET/GLOBAL/TOGGLE_LOADING_SCREEN"
+    });
     try {
       var privacyContract = new web3.eth.Contract(TestConfig.PRIVACY_ABI, TestConfig.PRIVACY_SMART_CONTRACT_ADDRESS, {
         from: wallet.address, // default from address
@@ -79,15 +86,37 @@ class AddressInfo extends PureComponent {
           value: 15 * TOMO
         })
         .on('error', function (error) {
-          alert(error);
+          this.props.dispatch({
+            type: "TOMO_WALLET/GLOBAL/TOGGLE_LOADING_SCREEN"
+          });
+          MySwal.fire({
+            title: 'Withdraw failed',
+            text: error.toString(),
+            type: 'error',
+          });
         })
         .then((receipt) => {
-          console.log('receipt.events.NewUTXO ', receipt.events.NewUTXO);
           this.props.dispatch({
-            type: "RELOAD_PRIVACY_BLANCE"
+            type: "TOMO_WALLET/GLOBAL/TOGGLE_LOADING_SCREEN"
+          });
+
+          MySwal.fire({
+            title: 'Successfully Deposit 15 TOMO',
+            text: receipt.events.NewUTXO.returnValues.toString(),
+            type: 'success',
+          });
+          this.props.dispatch({
+            type: "RELOAD_PRIVACY_BLANCE",
+            data: {
+              ...receipt.events.NewUTXO.returnValues,
+              balance: 15*TOMO
+            }
           });
         });
     } catch (ex) {
+      this.props.dispatch({
+        type: "TOMO_WALLET/GLOBAL/TOGGLE_LOADING_SCREEN"
+      });
       console.log(ex);
     }
   }

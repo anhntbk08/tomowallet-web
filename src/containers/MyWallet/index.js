@@ -655,7 +655,6 @@ class MyWallet extends PureComponent {
       privateSendToKenPopup,
       wallet,
     } = this.props;
-    console.log("privateSendToKenPopup ",privateSendToKenPopup);
     return (
       <Fragment>
         <Helmet>
