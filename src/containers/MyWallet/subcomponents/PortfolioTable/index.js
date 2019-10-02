@@ -146,11 +146,10 @@ class PortfolioTable extends Component {
     const web3 = new Web3(provider);
     var privacyContract = new web3.eth.Contract(TestConfig.PRIVACY_ABI, TestConfig.PRIVACY_SMART_CONTRACT_ADDRESS, {
       from: privacyAddrs.address, // default from address
-      gasPrice: '250000000', // default gas price in wei, 20 gwei in this case,
+      gasPrice: '250000000', 
       gas: '1000000'
     });
 
-    console.log("TestConfig.PRIVACY_SMART_CONTRACT_ADDRESS ", TestConfig.PRIVACY_SMART_CONTRACT_ADDRESS);
     // this.props.onToggleLoading(true);
     this.scanAllUTXO(privacyContract, privacyAddrs).then((result) => {
       this.props.updatePrivacyBalance({
@@ -204,11 +203,18 @@ class PortfolioTable extends Component {
     do {
       try {
         utxo = await this.getUTXO(index, privacyContract, privacyAddrs.address);
+        let utxoInstance1 = new UTXO({
+          ...utxo,
+          "3": index
+        });
+        let isMine1 = utxoInstance1.isMineUTXO(privacyAddrs.privSpendKey);
+        console.log(isMine1);
+
         if (utxo["3"] === false) {
           utxo["3"] = index; // tricky 
           let utxoInstance = new UTXO(utxo);
           let isMine = utxoInstance.isMineUTXO(privacyAddrs.privSpendKey);
-
+          // console.log(isMine);
           if (isMine && parseFloat(isMine.amount).toString() == isMine.amount) {
             balance = balance.add(toBN(isMine.amount));
             utxos.push({
@@ -241,7 +247,7 @@ class PortfolioTable extends Component {
 
     var privacyAddressContract = new web3.eth.Contract(TestConfig.PRIVACYADD_MAPPING_ABI, TestConfig.PRIVACYADD_MAPPING_SMART_CONTRACT, {
       from: wallet.address, // default from address
-      gasPrice: '250000000', // default gas price in wei, 20 gwei in this case,
+      gasPrice: '250000000', 
       gas: '2000000'
     });
 
@@ -257,6 +263,7 @@ class PortfolioTable extends Component {
           reject(error);
         })
         .then(function (receipt) {
+          console.log("receipt after register ", receipt);
           try {
             resolve(receipt);
           } catch (error) {
@@ -278,52 +285,65 @@ class PortfolioTable extends Component {
     let utxo = _.find(this.props.privacyAcc.utxos, (utxo) => {
       return utxo.balance === '15000000000000000000';
     });
-    console.log(this.props.privacyAcc.utxos);
+
+    console.log(utxo);
+
     let UTXOIns = new UTXO(utxo);
     let utxoIndex = utxo._index
     let signature = UTXOIns.sign(wallet.privSpendKey, wallet.address);
-    let amount = '500000000000000000'; // 0.5 tomo
+    let amount = '15000000000000000000';
 
-    let proof = sender.genTransactionProof(amount, sender.pubSpendKey, sender.pubViewKey);
+    let proof = sender.genTransactionProof(amount, sender.pubSpendKey, sender.pubViewKey, '0');
 
-    let commitment = Commitment.genCommitmentFromTxPub(amount, {
-      X: UTXOIns.txPubX,
-      YBit: UTXOIns.txPubYBit
-  }, sender.privViewKey, false);
+    console.log(toBN(utxo.balance).sub(toBN('15000000000000000000')).toString(10));
 
-    // console.log("proof.encryptedAmount ", proof.encryptedAmount)
-    // let commitment = ecparams.pointFromX(parseInt(UTXOIns.commitmentYBit) % 2 === 1,
-      // BigInteger(UTXOIns.commitmentX)).getEncoded(false);
+    // let remainCommitment = Commitment.genCommitmentFromTxPub(
+    //   0
+    //   , {
+    //     X: UTXOIns.txPubX,
+    //     YBit: UTXOIns.txPubYBit
+    // }, sender.privViewKey, false);
+
+    let inputCommitments = Commitment.sumCommitmentsFromUTXOs([UTXOIns], wallet.privSpendKey);
+
+    const remainCommitment = inputCommitments.add(
+        Point.decodeFrom(ecparams, proof.commitment).negate()
+    ).getEncoded(false);
 
     await this.registerPrivacyAddress(wallet.privSpendKey);
 
-    console.log(
-      utxoIndex,
-      '500000000000000000', '0x' + proof.encryptedAmount,
-      [[...signature.r.toArray()], [...signature.s.toArray()]],
-      wallet.address,
-      [
-        '0x' + commitment.toString('hex').substr(2, 64), // the X part of curve 
-        '0x' + commitment.toString('hex').substr(-64), // the Y part of curve
-      ]
-    );
-    return;
     privacyContract.methods.withdrawFunds(
       utxoIndex,
-      '500000000000000000', '0x' + proof.encryptedAmount,
+      amount, '0x' + proof.encryptedAmount,
       [[...signature.r.toArray()], [...signature.s.toArray()]],
       wallet.address,
       [
-        '0x' + commitment.toString('hex').substr(2, 64), // the X part of curve 
-        '0x' + commitment.toString('hex').substr(-64), // the Y part of curve
+        '0x' + remainCommitment.toString('hex').substr(2, 64), // the X part of curve 
+        '0x' + remainCommitment.toString('hex').substr(-64), // the Y part of curve
       ]
     )
       .send({
         from: wallet.address,
-        gasPrice: '300000000', // default gas price in wei, 20 gwei in this case,
+        gasPrice: '300000000', 
         gas: '10000000'
       })
-      .then(function (receipt) {
+      .then((receipt) => {
+        this.props.updatePrivacyBalance({
+          utxos: _.remove(this.props.privacyAcc.utxos, (txo) => {
+            return txo._index === utxo._index;
+          }),
+          data: [{
+            "tokenName": "TOMO-DARK",
+            "symbol": "TOMO-DARK",
+            "icon": "/0ed90bcc1a46c7aa7e05f3042141068b.png",
+            "balance": toBN(this.props.privacyAcc.data[0].balance).sub(toBN('15000000000000000000')).toString(10),
+            "decimals": 18,
+            "price": 0.3079502542,
+            "type": "CURRENCY",
+            "txFee": 0.03,
+            "publisher": "TomoChain"
+          }]
+        });
         MySwal.fire({
           title: 'Withdraw sucessfully',
           type: 'success',
@@ -339,101 +359,125 @@ class PortfolioTable extends Component {
   }
 
   privateSend = () => {
-    // let receiver = new Stealth({
-    //   ...Address.generateKeys(TestConfig.WALLETS[1].privateKey)
-    // });
+    let receiverAddress = Address.generateKeys(TestConfig.WALLETS["1"].privateKey);
+    let receiver = new Stealth(receiverAddress);
 
-    // const utxos = _.find(this.state.utxos, )[this.state.utxos[this.state.utxos.length - 1]];
-    // console.log("utxos ", utxos);
-    // const { wallet } = this.props;
-    // let provider = new HDWalletProvider(wallet.privSpendKey, TestConfig.RPC_END_POINT);
-    // const web3 = new Web3(provider);
-    // var privacyContract = new web3.eth.Contract(TestConfig.PRIVACY_ABI, TestConfig.PRIVACY_SMART_CONTRACT_ADDRESS, {
-    //   from: wallet.address, // default from address
-    // });
-    // let sender = new Stealth(wallet);
+    let utxos = [_.find(this.props.privacyAcc.utxos, (utxo) => {
+      return utxo.balance === '15000000000000000000';
+    })];
 
-    // let UTXOs = [];
-    // const spendingUtxosIndex = utxos.map(utxo => {
-    //   console.log("utxo ", utxo);
-    //     UTXOs.push(new UTXO(utxo));
-    //     return utxo["7"];
-    // });
+    // if (utxos.length > 2) {
+    //   utxos = utxos.slice(0, 1);
+    // }
 
-    // let randomMask = ec.genKeyPair().getPrivate('hex');
-    // const proofOfReceiver = sender.genTransactionProof(5*TOMO, receiver.pubSpendKey, receiver.pubViewKey, randomMask);
+    console.log('utxos ', utxos);
 
-    // const myRemainMask = ec.genKeyPair().getPrivate('hex'); // dont check by now
+    const { wallet } = this.props;
+    let provider = new HDWalletProvider(wallet.privSpendKey, TestConfig.RPC_END_POINT);
+    const web3 = new Web3(provider);
+    var privacyContract = new web3.eth.Contract(TestConfig.PRIVACY_ABI, TestConfig.PRIVACY_SMART_CONTRACT_ADDRESS, {
+      from: wallet.address, // default from address
+    });
+    let sender = new Stealth(wallet);
 
-    // let proofOfMe = sender.genTransactionProof(
-    //   5*TOMO, sender.pubSpendKey, sender.pubViewKey, myRemainMask);
+    let UTXOs = [];
+    const spendingUtxosIndex = utxos.map(utxo => {
+      var UTXOIns = new UTXO(utxo); 
+      UTXOs.push(UTXOIns);
+      return UTXOIns.index;
+    });
 
-    // // sum up commitment to make sure input utxo commitments = output utxos commitment
-    // let inputCommitments = Commitment.sumCommitmentsFromUTXOs(UTXOs, wallet.privSpendKey);
+    let randomMask = ec.genKeyPair().getPrivate('hex');
+    const proofOfReceiver = sender.genTransactionProof('15000000000000000000', receiver.pubSpendKey, receiver.pubViewKey, randomMask);
 
-    // const pfm = inputCommitments.add(
-    //     Point.decodeFrom(ecparams, proofOfReceiver.commitment).negate()
-    // ).getEncoded(false);
+    const myRemainMask = ec.genKeyPair().getPrivate('hex'); // dont check by now
 
-    // privacyContract.methods.privateSend(
-    //     spendingUtxosIndex,
-    //     [
-    //         '0x' + pfm.toString('hex').substr(2, 64), // the X part of curve 
-    //         '0x' + pfm.toString('hex').substr(-64), // the Y part of curve
-    //         '0x' + proofOfReceiver.commitment.toString('hex').substr(2, 64), // the X part of curve 
-    //         '0x' + proofOfReceiver.commitment.toString('hex').substr(-64), // the Y part of curve
-    //         '0x' + proofOfMe.onetimeAddress.toString('hex').substr(2, 64), // the X part of curve 
-    //         '0x' + proofOfMe.onetimeAddress.toString('hex').substr(-64), // the Y part of curve
-    //         '0x' + proofOfReceiver.onetimeAddress.toString('hex').substr(2, 64), // the X part of curve 
-    //         '0x' + proofOfReceiver.onetimeAddress.toString('hex').substr(-64), // the Y part of curve
-    //         '0x' + proofOfMe.txPublicKey.toString('hex').substr(2, 64), // the X part of curve 
-    //         '0x' + proofOfMe.txPublicKey.toString('hex').substr(-64), // the Y part of curve
-    //         '0x' + proofOfReceiver.txPublicKey.toString('hex').substr(2, 64), // the X part of curve 
-    //         '0x' + proofOfReceiver.txPublicKey.toString('hex').substr(-64), // the Y part of curve
-    //     ],
-    //     [
-    //         '0x' + proofOfMe.encryptedAmount, // encrypt of amount using ECDH],
-    //         '0x' + proofOfReceiver.encryptedAmount, // encrypt of amount using ECDH],
-    //         '0x' + proofOfMe.encryptedMask, // encrypt of amount using ECDH],
-    //         '0x' + proofOfReceiver.encryptedMask,// encrypt of amount using ECDH],
-    //     ]
-    // )
-    // .send({
-    //   from: wallet.address // in real case, generate an dynamic accont to put here
-    // })
-    // .then(function (receipt) {
-    //   MySwal.fire({
-    //     title: 'Private Send sucessfully',
-    //     type: 'success',
-    //   })
-    // })
-    // .catch(function (error) {
-    //     MySwal.fire({
-    //       title: 'Private Send failed',
-    //       text: error.toString(),
-    //       type: 'error',
-    //     })
-    // });
+    let proofOfMe = sender.genTransactionProof(
+      0, sender.pubSpendKey, sender.pubViewKey, myRemainMask);
+
+    // sum up commitment to make sure input utxo commitments = output utxos commitment
+    let inputCommitments = Commitment.sumCommitmentsFromUTXOs(UTXOs, wallet.privSpendKey);
+
+    const pfm = inputCommitments.add(
+        Point.decodeFrom(ecparams, proofOfReceiver.commitment).negate()
+    ).getEncoded(false);
+
+    privacyContract.methods.privateSend(
+        spendingUtxosIndex,
+        [
+            '0x' + pfm.toString('hex').substr(2, 64), // the X part of curve 
+            '0x' + pfm.toString('hex').substr(-64), // the Y part of curve
+            '0x' + proofOfReceiver.commitment.toString('hex').substr(2, 64), // the X part of curve 
+            '0x' + proofOfReceiver.commitment.toString('hex').substr(-64), // the Y part of curve
+            '0x' + proofOfMe.onetimeAddress.toString('hex').substr(2, 64), // the X part of curve 
+            '0x' + proofOfMe.onetimeAddress.toString('hex').substr(-64), // the Y part of curve
+            '0x' + proofOfReceiver.onetimeAddress.toString('hex').substr(2, 64), // the X part of curve 
+            '0x' + proofOfReceiver.onetimeAddress.toString('hex').substr(-64), // the Y part of curve
+            '0x' + proofOfMe.txPublicKey.toString('hex').substr(2, 64), // the X part of curve 
+            '0x' + proofOfMe.txPublicKey.toString('hex').substr(-64), // the Y part of curve
+            '0x' + proofOfReceiver.txPublicKey.toString('hex').substr(2, 64), // the X part of curve 
+            '0x' + proofOfReceiver.txPublicKey.toString('hex').substr(-64), // the Y part of curve
+        ],
+        [
+            '0x' + proofOfMe.encryptedAmount, // encrypt of amount using ECDH],
+            '0x' + proofOfReceiver.encryptedAmount, // encrypt of amount using ECDH],
+            '0x' + proofOfMe.encryptedMask, // encrypt of amount using ECDH],
+            '0x' + proofOfReceiver.encryptedMask,// encrypt of amount using ECDH],
+        ]
+    )
+    .send({
+      from: wallet.address, // in real case, generate an dynamic account to put here
+      gasPrice: '300000000', 
+      gas: '10000000'
+    })
+    .then(function (receipt) {
+      console.log("receipt ", receipt);
+      MySwal.fire({
+        title: 'Private Send sucessfully to ' + receiverAddress.pubAddr,
+        type: 'success',
+      })
+    })
+    .catch(function (error) {
+        MySwal.fire({
+          title: 'Private Send failed',
+          text: error.toString(),
+          type: 'error',
+        })
+    });
   }
 
   render() {
     const {
       data,
       intl: { formatMessage },
+      openSendTokenPopup,
       walletMode
     } = this.props;
 
     return (
       <BoxPortfolio>
-        {this.state.isLoading ?
-          'Loading ....'
-          : <CommonTable
-            data={walletMode === 'normal' ? data : this.props.privacyToken}
+        {walletMode === 'normal' ?
+          <CommonTable
+            data={data}
             setConfig={portfolioConfig}
             getConfigProps={{
               formatMessage,
+              openSendTokenPopup: walletMode === 'normal' ? openSendTokenPopup : this.openPrivateSendPopup,
+            }}
+            getTableProps={{
+              minRows: 3,
+              showPagination: false,
+              defaultPageSize: undefined,
+              TheadComponent: props =>
+                props.className !== '-header' && props.children,
+            }}
+          /> :
+          <CommonTable
+            data={this.props.privacyToken}
+            setConfig={privacyPortfolioConfig}
+            getConfigProps={{
+              formatMessage,
               onWithdraw: this.onWithdraw,
-              // openSendTokenPopup: walletMode === 'normal' ? openSendTokenPopup : this.openPrivateSendPopup,
               openSendTokenPopup: this.privateSend
             }}
             getTableProps={{

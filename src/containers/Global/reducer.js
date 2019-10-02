@@ -107,12 +107,8 @@ export default (state = initialState, action) => {
     }
     case 'RELOAD_PRIVACY_BLANCE': {
       const privacyData = state.get("privacyAcc");
-      privacyData.utxos.push(action.data)
       const tokenData = privacyData.data[0];
-      tokenData.balance = toBN(tokenData.balance).add(toBN(action.data.balance)).toString(10);
-      privacyData.data[0] = tokenData;
       const newBalance = toBN(tokenData.balance).add(toBN(action.data.balance)).toString(10);
-   
       return state.updateIn(["privacyAcc", 'data'], data => [{
         ...data[0],
         balance: newBalance

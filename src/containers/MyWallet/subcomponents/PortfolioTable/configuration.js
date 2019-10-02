@@ -96,24 +96,6 @@ export default ({ formatMessage, openSendTokenPopup, onWithdraw }) => [
           <TextYellowPointer
             role='presentation'
             onClick={() =>
-              onWithdraw({
-                [SEND_TOKEN_FIELDS.TOKEN]: original,
-                isTokenSpecific: true,
-              })
-            }
-          >
-            Withdraw 15 tomo
-          </TextYellowPointer>
-        )},
-      },
-      {
-        headerClassName: 'd-none',
-        accessor: PORTFOLIO_COLUMNS.SEND,
-        Cell: ({ original }) => {
-          return (
-          <TextYellowPointer
-            role='presentation'
-            onClick={() =>
               openSendTokenPopup({
                 [SEND_TOKEN_FIELDS.TOKEN]: original,
                 isTokenSpecific: true,
