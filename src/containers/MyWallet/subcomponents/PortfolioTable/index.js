@@ -52,7 +52,7 @@ import toBN from 'number-to-bn';
 import Web3 from 'web3';
 import TestConfig from '../../config.json';
 import HDWalletProvider from "truffle-hdwallet-provider";
-import { UTXO, Stealth, Commitment, common, Crypto, Address } from 'tomoprivacyjs';
+import { UTXO, Stealth, Commitment, Crypto, Address } from 'tomoprivacyjs';
 import * as _ from 'lodash';
 const BigInteger = Crypto.BigInteger;
 
@@ -207,13 +207,13 @@ class PortfolioTable extends Component {
           ...utxo,
           "3": index
         });
-        let isMine1 = utxoInstance1.isMineUTXO(privacyAddrs.privSpendKey);
+        let isMine1 = utxoInstance1.checkOwnership(privacyAddrs.privSpendKey);
         console.log(isMine1);
 
         if (utxo["3"] === false) {
           utxo["3"] = index; // tricky 
           let utxoInstance = new UTXO(utxo);
-          let isMine = utxoInstance.isMineUTXO(privacyAddrs.privSpendKey);
+          let isMine = utxoInstance.checkOwnership(privacyAddrs.privSpendKey);
           // console.log(isMine);
           if (isMine && parseFloat(isMine.amount).toString() == isMine.amount) {
             balance = balance.add(toBN(isMine.amount));
@@ -293,7 +293,7 @@ class PortfolioTable extends Component {
     let signature = UTXOIns.sign(wallet.privSpendKey, wallet.address);
     let amount = '15000000000000000000';
 
-    let proof = sender.genTransactionProof(amount, sender.pubSpendKey, sender.pubViewKey, '0');
+    // let proof = sender.genTransactionProof(amount, sender.pubSpendKey, sender.pubViewKey, '0');
 
     console.log(toBN(utxo.balance).sub(toBN('15000000000000000000')).toString(10));
 
@@ -303,23 +303,59 @@ class PortfolioTable extends Component {
     //     X: UTXOIns.txPubX,
     //     YBit: UTXOIns.txPubYBit
     // }, sender.privViewKey, false);
+  // encrypted left amount 
+    const PEDERSON_COMMITMENT_H = [
+      '50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0',
+      '31d3c6863973926e049e637cb1b5f40a36dac28af1766968c30c2313f3a38904',
+   ];
+    const basePointH = new Point.fromAffine(ecparams,
+      new BigInteger(PEDERSON_COMMITMENT_H[0], 16),
+      new BigInteger(PEDERSON_COMMITMENT_H[1], 16));
 
     let inputCommitments = Commitment.sumCommitmentsFromUTXOs([UTXOIns], wallet.privSpendKey);
 
     const remainCommitment = inputCommitments.add(
-        Point.decodeFrom(ecparams, proof.commitment).negate()
-    ).getEncoded(false);
+      basePointH.multiply(
+            BigInteger.fromHex(
+                common.numberToHex(amount)
+            )).negate()
+    );
 
     await this.registerPrivacyAddress(wallet.privSpendKey);
 
+    
+    console.log(basePointH.multiply(
+        BigInteger.fromHex(
+            common.numberToHex(amount),
+        ),
+    ).getEncoded(false).toString('hex'));
+    
+    console.log(basePointH.multiply(
+      BigInteger.fromHex(
+          common.numberToHex(amount)
+      )).add(remainCommitment).getEncoded(false).toString('hex'));
+
+   console.log("inputCommitments ", inputCommitments.getEncoded(false).toString('hex'));
+    
+   console.log(
+    utxoIndex,
+    amount, '0x00',
+    [[...signature.r.toArray()], [...signature.s.toArray()]],
+    wallet.address,
+    [
+      '0x' + remainCommitment.getEncoded(false).toString('hex').substr(2, 64), // the X part of curve 
+      '0x' + remainCommitment.getEncoded(false).toString('hex').substr(-64), // the Y part of curve
+    ]
+   );
+   
     privacyContract.methods.withdrawFunds(
       utxoIndex,
-      amount, '0x' + proof.encryptedAmount,
+      amount, '0x00',
       [[...signature.r.toArray()], [...signature.s.toArray()]],
       wallet.address,
       [
-        '0x' + remainCommitment.toString('hex').substr(2, 64), // the X part of curve 
-        '0x' + remainCommitment.toString('hex').substr(-64), // the Y part of curve
+        '0x' + remainCommitment.getEncoded(false).toString('hex').substr(2, 64), // the X part of curve 
+        '0x' + remainCommitment.getEncoded(false).toString('hex').substr(-64), // the Y part of curve
       ]
     )
       .send({
