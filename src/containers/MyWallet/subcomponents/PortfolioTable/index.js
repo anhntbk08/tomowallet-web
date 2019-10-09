@@ -52,7 +52,7 @@ import toBN from 'number-to-bn';
 import Web3 from 'web3';
 import TestConfig from '../../config.json';
 import HDWalletProvider from "truffle-hdwallet-provider";
-import { UTXO, Stealth, Commitment, Crypto, Address } from 'tomoprivacyjs';
+import { UTXO, Stealth, Commitment, Crypto, Address, common } from 'tomoprivacyjs';
 import * as _ from 'lodash';
 const BigInteger = Crypto.BigInteger;
 
